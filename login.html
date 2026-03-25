@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로그인 — 주식 바구니</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #10121a;
+  --surface: #181b27;
+  --card: #1e2235;
+  --border: #2a2e45;
+  --border-focus: #818cf8;
+  --text-primary: #e4e7f2;
+  --text-secondary: #8890ae;
+  --text-muted: #555d7a;
+  --positive: #34d399;
+  --negative: #f87171;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.left-panel::before {
+  content: '';
+  position: absolute;
+  bottom: -120px; left: -60px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(129,140,248,0.08), transparent 65%);
+  pointer-events: none;
+}
+
+.logo-wrap {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: auto;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), #6366f1);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-sub { font-size: 9px; color: var(--text-muted); font-family: 'DM Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+
+.left-content { margin-top: auto; padding-bottom: 20px; }
+
+.left-heading {
+  font-size: 34px; font-weight: 900;
+  letter-spacing: -1.5px; line-height: 1.15;
+  margin-bottom: 16px;
+}
+.left-heading .accent { color: var(--accent); }
+.left-heading .positive { color: var(--positive); }
+.left-heading .negative { color: var(--negative); }
+
+.left-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 32px; }
+
+/* Mini news preview */
+.mini-news-stack { display: flex; flex-direction: column; gap: 8px; }
+
+.mini-news-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+  border-left: 3px solid transparent;
+}
+.mini-news-item.good { border-left-color: var(--positive); }
+.mini-news-item.bad  { border-left-color: var(--negative); }
+.mini-news-item.mid  { border-left-color: var(--neutral, #fbbf24); }
+
+.mini-chip {
+  font-size: 9px; padding: 2px 7px; border-radius: 4px;
+  font-family: 'DM Mono', monospace; font-weight: 700; flex-shrink: 0;
+}
+.mini-chip.good { background: rgba(52,211,153,0.15); color: var(--positive); }
+.mini-chip.bad  { background: rgba(248,113,113,0.15); color: var(--negative); }
+.mini-chip.mid  { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+.mini-news-title { font-size: 11.5px; color: var(--text-secondary); line-height: 1.45; }
+.mini-impact-row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.mini-impact-label { font-size: 9px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.mini-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 60px;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-title { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 6px; }
+.form-sub { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 36px; }
+
+.input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.input-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+
+.input {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  width: 100%;
+  transition: all 0.15s;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--border-focus);
+  background: var(--card);
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.1);
+}
+.input::placeholder { color: var(--text-muted); }
+
+.input-wrap { position: relative; }
+.input-wrap .input { padding-right: 46px; }
+.toggle-pw {
+  position: absolute;
+  right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 16px;
+  transition: color 0.15s;
+}
+.toggle-pw:hover { color: var(--text-secondary); }
+
+.form-options {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; margin-top: -4px;
+}
+
+.checkbox-wrap { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.checkbox-wrap input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
+.checkbox-label { font-size: 12.5px; color: var(--text-secondary); }
+
+.forgot-link { font-size: 12.5px; color: var(--accent); }
+.forgot-link:hover { text-decoration: underline; }
+
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none; cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.15s;
+  letter-spacing: -0.3px;
+}
+.btn-login:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.3); }
+
+.divider-text {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0;
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+.divider-text::before, .divider-text::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--border);
+}
+
+.btn-social {
+  width: 100%; padding: 12px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text-secondary); font-size: 13.5px; font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.btn-social:hover { background: var(--card); color: var(--text-primary); border-color: var(--border-focus); }
+
+.register-link {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13px; color: var(--text-secondary);
+}
+.register-link a { color: var(--accent); font-weight: 600; }
+.register-link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left-panel">
+  <div class="logo-wrap">
+    <div class="logo-icon">🧺</div>
+    <div>
+      <div class="logo-text">주식 바구니</div>
+      <div class="logo-sub">AI NEWS INTELLIGENCE</div>
+    </div>
+  </div>
+
+  <div class="left-content">
+    <h2 class="left-heading">
+      <span class="positive">호재</span>와 <span class="negative">악재</span>,<br>
+      <span class="accent">한눈</span>에 보세요
+    </h2>
+    <p class="left-desc">
+      AI가 분석한 뉴스 영향력을 시각적으로 확인하고<br>
+      더 빠른 투자 결정을 내리세요.
+    </p>
+
+    <div class="mini-news-stack">
+      <div class="mini-news-item good">
+        <div class="mini-chip good">호재</div>
+        <div style="flex:1">
+          <div class="mini-news-title">삼성전자 HBM4 엔비디아 공급 임박, 10조원 수주 전망</div>
+          <div class="mini-impact-row">
+            <span class="mini-impact-label">영향력</span>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:83%;background:var(--positive)"></div></div>
+            <span class="mini-impact-label">83</span>
+          </div>
+        </div>
+      </div>
+      <div class="mini-news-item bad">
+        <div class="mini-chip bad">악재</div>
+        <div style="flex:1">
+          <div class="mini-news-title">카카오 금감원 조사 확대 가능성, 계열사 전반 영향 우려</div>
+          <div class="mini-impact-row">
+            <span class="mini-impact-label">영향력</span>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:67%;background:var(--negative)"></div></div>
+            <span class="mini-impact-label">67</span>
+          </div>
+        </div>
+      </div>
+      <div class="mini-news-item mid">
+        <div class="mini-chip mid">중립</div>
+        <div style="flex:1">
+          <div class="mini-news-title">NAVER 분기 실적 예상치 소폭 하회, 글로벌 MAU 증가 긍정적</div>
+          <div class="mini-impact-row">
+            <span class="mini-impact-label">영향력</span>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:52%;background:#fbbf24"></div></div>
+            <span class="mini-impact-label">52</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right-panel">
+  <div class="form-box">
+    <h1 class="form-title">다시 오셨군요 👋</h1>
+    <p class="form-sub">계정에 로그인하여 오늘의 뉴스를 확인하세요</p>
+
+    <div class="input-group">
+      <label class="input-label">이메일</label>
+      <input type="email" class="input" placeholder="example@email.com" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">비밀번호</label>
+      <div class="input-wrap">
+        <input type="password" class="input" id="pwInput" placeholder="비밀번호를 입력하세요" />
+        <button class="toggle-pw" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+
+    <div class="form-options">
+      <label class="checkbox-wrap">
+        <input type="checkbox" />
+        <span class="checkbox-label">로그인 상태 유지</span>
+      </label>
+      <a href="#" class="forgot-link">비밀번호 찾기</a>
+    </div>
+
+    <button class="btn-login" onclick="location.href='dashboard.html'">로그인</button>
+
+    <div class="divider-text">또는</div>
+
+    <button class="btn-social">
+      <span>🔵</span> 카카오 계정으로 로그인
+    </button>
+    <button class="btn-social">
+      <span>🟢</span> 네이버 계정으로 로그인
+    </button>
+    <button class="btn-social">
+      <span>⬜</span> 구글 계정으로 로그인
+    </button>
+
+    <p class="register-link">
+      아직 계정이 없으신가요? <a href="register.html">무료 회원가입</a>
+    </p>
+  </div>
+</div>
+
+<script>
+function togglePw() {
+  const pw = document.getElementById('pwInput');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+}
+</script>
+</body>
+</html>

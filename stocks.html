@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 바구니 — 주식 바구니</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #10121a; --surface: #181b27; --card: #1e2235; --card-hover: #242840;
+  --border: #2a2e45; --border-light: #333750;
+  --text-primary: #e4e7f2; --text-secondary: #8890ae; --text-muted: #555d7a;
+  --positive: #34d399; --positive-bg: rgba(52,211,153,0.08); --positive-border: rgba(52,211,153,0.2);
+  --negative: #f87171; --negative-bg: rgba(248,113,113,0.08); --negative-border: rgba(248,113,113,0.2);
+  --neutral: #fbbf24; --accent: #818cf8; --accent-bg: rgba(129,140,248,0.1);
+  --sidebar-w: 240px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+.sidebar-logo{padding:22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-text{font-size:15px;font-weight:800;letter-spacing:-0.3px;}
+.logo-sub{font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;}
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-section{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:10px 8px 5px;margin-top:8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;margin-bottom:2px;position:relative;}
+.nav-item:hover{background:var(--card);color:var(--text-primary);}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:5px;bottom:5px;width:3px;background:var(--accent);border-radius:0 2px 2px 0;}
+.nav-badge{margin-left:auto;background:var(--negative);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;}
+.sidebar-bottom{padding:12px;border-top:1px solid var(--border);}
+.user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:background 0.15s;}
+.user-card:hover{background:var(--card);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-name{font-size:12.5px;font-weight:600;}
+.user-plan{font-size:9.5px;color:var(--accent);font-family:'DM Mono',monospace;}
+
+.main{margin-left:var(--sidebar-w);flex:1;}
+.topbar{height:58px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:15px;font-weight:700;letter-spacing:-0.3px;}
+.topbar-sub{font-size:11.5px;color:var(--text-muted);font-family:'DM Mono',monospace;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#6366f1;}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--card);color:var(--text-primary);}
+.btn-danger{background:transparent;color:var(--negative);border:1px solid var(--negative-border);}
+.btn-danger:hover{background:var(--negative-bg);}
+
+.body{padding:26px 28px;}
+
+/* ── PLAN BAR ── */
+.plan-bar{
+  background:var(--accent-bg);border:1px solid rgba(129,140,248,0.25);
+  border-radius:8px;padding:12px 18px;
+  display:flex;align-items:center;gap:14px;margin-bottom:24px;
+  font-size:13px;
+}
+.plan-bar .plan-name{font-weight:700;color:var(--accent);}
+.plan-bar .plan-quota{color:var(--text-secondary);}
+.plan-quota-bar{flex:1;max-width:160px;height:5px;background:var(--border);border-radius:4px;overflow:hidden;}
+.plan-quota-fill{height:100%;border-radius:4px;background:var(--accent);}
+.plan-pct{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);}
+
+/* ── ADD STOCK SECTION ── */
+.add-section{display:grid;grid-template-columns:1fr 320px;gap:20px;margin-bottom:28px;}
+
+.search-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px;}
+.card-title{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:16px;}
+
+.search-bar{display:flex;gap:8px;margin-bottom:14px;}
+.search-input{
+  flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:7px;
+  color:var(--text-primary);font-family:'Noto Sans KR',sans-serif;font-size:13.5px;
+  padding:10px 14px;outline:none;transition:all 0.15s;
+}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,140,248,0.1);}
+.search-input::placeholder{color:var(--text-muted);}
+
+.market-tabs{display:flex;gap:4px;margin-bottom:14px;}
+.market-tab{padding:5px 12px;border-radius:5px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--text-muted);border:1px solid var(--border);transition:all 0.15s;}
+.market-tab.active{background:var(--accent-bg);color:var(--accent);border-color:rgba(129,140,248,0.3);}
+
+.search-result-list{display:flex;flex-direction:column;gap:6px;}
+.search-result-item{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:all 0.15s;
+}
+.search-result-item:hover{background:var(--card);border-color:var(--accent);}
+.search-result-item.adding{border-color:var(--positive);background:var(--positive-bg);}
+.sr-logo{width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sr-name{font-size:13.5px;font-weight:700;}
+.sr-code{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;}
+.sr-market{font-size:9px;padding:2px 6px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:4px;}
+.sr-price{margin-left:auto;text-align:right;}
+.sr-price .price{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;}
+.sr-price .change{font-size:10px;font-family:'DM Mono',monospace;}
+.sr-add-btn{padding:5px 12px;border-radius:5px;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;transition:all 0.15s;}
+.sr-add-btn:hover{background:#6366f1;}
+.sr-add-btn.added{background:var(--positive-bg);color:var(--positive);border:1px solid var(--positive-border);}
+
+/* recommended */
+.recommend-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.recommend-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.recommend-item:last-child{border-bottom:none;}
+.recommend-item:hover .r-name{color:var(--accent);}
+.r-rank{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;width:16px;text-align:center;}
+.r-name{font-size:13px;font-weight:600;flex:1;transition:color 0.15s;}
+.r-code{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;}
+.r-heat{font-size:10px;font-family:'DM Mono',monospace;color:var(--neutral);}
+
+/* ── MY BASKET ── */
+.basket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.basket-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:18px;position:relative;transition:all 0.18s;cursor:pointer;
+}
+.basket-card:hover{background:var(--card-hover);border-color:var(--border-light);}
+.basket-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.bc-logo{width:40px;height:40px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.bc-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;border-radius:4px;transition:all 0.15s;}
+.bc-remove:hover{background:var(--negative-bg);color:var(--negative);}
+.bc-name{font-size:14.5px;font-weight:700;margin-bottom:2px;}
+.bc-code{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;}
+.bc-market-badge{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:5px;}
+.bc-price-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px;}
+.bc-price{font-size:20px;font-weight:800;font-family:'DM Mono',monospace;}
+.bc-change{font-size:12px;font-family:'DM Mono',monospace;font-weight:700;}
+
+.bc-news-row{display:flex;gap:4px;margin-bottom:10px;}
+.bc-news-pill{display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
+.bc-news-pill.good{background:var(--positive-bg);color:var(--positive);}
+.bc-news-pill.bad{background:var(--negative-bg);color:var(--negative);}
+.bc-news-pill.mid{background:rgba(251,191,36,0.1);color:var(--neutral);}
+
+.bc-alert-row{background:var(--surface);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text-secondary);border:1px solid var(--border);}
+.bc-alert-row.has-alert{background:var(--negative-bg);border-color:var(--negative-border);color:var(--negative);}
+
+/* ADD CARD */
+.basket-add-card{
+  background:transparent;border:1.5px dashed var(--border);border-radius:10px;
+  padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;cursor:pointer;transition:all 0.18s;gap:10px;
+}
+.basket-add-card:hover{border-color:var(--accent);background:var(--accent-bg);}
+.basket-add-card .add-icon{font-size:28px;color:var(--text-muted);}
+.basket-add-card .add-text{font-size:13px;color:var(--text-muted);font-weight:600;}
+.basket-add-card:hover .add-icon,.basket-add-card:hover .add-text{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-icon">🧺</div><div><div class="logo-text">주식 바구니</div><div class="logo-sub">AI INTEL</div></div></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">메뉴</div>
+    <a href="dashboard.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">📊</span> 대시보드</a>
+    <a href="news.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">📰</span> 뉴스 피드<span class="nav-badge">3</span></a>
+    <a href="stocks.html" class="nav-item active"><span style="font-size:14px;width:20px;text-align:center">🧺</span> 내 바구니</a>
+    <a href="stock-detail.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔍</span> 종목 분석</a>
+    <div class="nav-section">설정</div>
+    <a href="#" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
+    <a href="#" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
+    <a href="index.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🏠</span> 홈으로</a>
+  </nav>
+  <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">홍</div><div><div class="user-name">홍길동</div><div class="user-plan">PRO PLAN</div></div><span style="margin-left:auto;color:var(--text-muted);font-size:14px;">⋯</span></div></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div><div class="topbar-title">내 바구니</div><div class="topbar-sub">종목 등록 및 관리</div></div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost">📤 내보내기</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PLAN BAR -->
+    <div class="plan-bar">
+      <span>🚀</span>
+      <span class="plan-name">Pro 플랜</span>
+      <span class="plan-quota">종목 사용:</span>
+      <div class="plan-quota-bar"><div class="plan-quota-fill" style="width:16.6%"></div></div>
+      <span class="plan-pct">5 / 30</span>
+      <span style="color:var(--text-muted);font-size:12px;">· 일 크롤링 횟수:</span>
+      <span style="color:var(--accent);font-size:12px;font-family:'DM Mono',monospace;font-weight:700;">10회 / 10회</span>
+      <a href="#" style="margin-left:auto;font-size:11.5px;color:var(--accent);">플랜 변경 →</a>
+    </div>
+
+    <!-- ADD STOCK SECTION -->
+    <div class="add-section">
+      <div class="search-card">
+        <div class="card-title">🔍 종목 검색 & 추가</div>
+        <div class="search-bar">
+          <input type="text" class="search-input" id="searchInput" placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930, NVDA)" oninput="handleSearch(this.value)" />
+          <button class="btn btn-primary">검색</button>
+        </div>
+        <div class="market-tabs">
+          <div class="market-tab active" onclick="setMarket('all',this)">전체</div>
+          <div class="market-tab" onclick="setMarket('kospi',this)">KOSPI</div>
+          <div class="market-tab" onclick="setMarket('kosdaq',this)">KOSDAQ</div>
+          <div class="market-tab" onclick="setMarket('us',this)">미국</div>
+          <div class="market-tab" onclick="setMarket('etf',this)">ETF</div>
+        </div>
+        <div class="search-result-list" id="searchResults">
+          <div id="defaultResults">
+            <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px;font-family:'DM Mono',monospace;">📈 인기 종목</div>
+            <div class="search-result-item" onclick="addStock(this, '삼성전자', '005930', 'KOSPI')">
+              <div class="sr-logo">💠</div>
+              <div style="flex:1"><div class="sr-name">삼성전자 <span class="sr-market">KOSPI</span></div><div class="sr-code">005930</div></div>
+              <div class="sr-price"><div class="price">84,200</div><div class="change" style="color:var(--positive)">▲ +1.82%</div></div>
+              <button class="sr-add-btn">+ 추가</button>
+            </div>
+            <div class="search-result-item" onclick="addStock(this, 'SK하이닉스', '000660', 'KOSPI')">
+              <div class="sr-logo">🔷</div>
+              <div style="flex:1"><div class="sr-name">SK하이닉스 <span class="sr-market">KOSPI</span></div><div class="sr-code">000660</div></div>
+              <div class="sr-price"><div class="price">192,500</div><div class="change" style="color:var(--positive)">▲ +3.11%</div></div>
+              <button class="sr-add-btn">+ 추가</button>
+            </div>
+            <div class="search-result-item" onclick="addStock(this, 'NVIDIA', 'NVDA', 'NASDAQ')">
+              <div class="sr-logo">🟩</div>
+              <div style="flex:1"><div class="sr-name">NVIDIA <span class="sr-market">NASDAQ</span></div><div class="sr-code">NVDA</div></div>
+              <div class="sr-price"><div class="price">$142.30</div><div class="change" style="color:var(--positive)">▲ +4.20%</div></div>
+              <button class="sr-add-btn">+ 추가</button>
+            </div>
+            <div class="search-result-item" onclick="addStock(this, 'Apple', 'AAPL', 'NASDAQ')">
+              <div class="sr-logo">🍎</div>
+              <div style="flex:1"><div class="sr-name">Apple <span class="sr-market">NASDAQ</span></div><div class="sr-code">AAPL</div></div>
+              <div class="sr-price"><div class="price">$218.10</div><div class="change" style="color:var(--positive)">▲ +0.55%</div></div>
+              <button class="sr-add-btn">+ 추가</button>
+            </div>
+            <div class="search-result-item" onclick="addStock(this, 'LG에너지솔루션', '373220', 'KOSPI')">
+              <div class="sr-logo">⚡</div>
+              <div style="flex:1"><div class="sr-name">LG에너지솔루션 <span class="sr-market">KOSPI</span></div><div class="sr-code">373220</div></div>
+              <div class="sr-price"><div class="price">312,000</div><div class="change" style="color:var(--negative)">▼ -0.96%</div></div>
+              <button class="sr-add-btn">+ 추가</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recommend-card">
+        <div class="card-title">🔥 오늘 핫 종목</div>
+        <div style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:10px;">뉴스 언급량 기준</div>
+        <div class="recommend-item"><span class="r-rank">1</span><div style="flex:1"><div class="r-name">삼성전자</div><div class="r-code">005930 · KOSPI</div></div><span class="r-heat">🔥 언급 284회</span></div>
+        <div class="recommend-item"><span class="r-rank">2</span><div style="flex:1"><div class="r-name">카카오</div><div class="r-code">035720 · KOSPI</div></div><span class="r-heat">🔥 언급 201회</span></div>
+        <div class="recommend-item"><span class="r-rank">3</span><div style="flex:1"><div class="r-name">SK하이닉스</div><div class="r-code">000660 · KOSPI</div></div><span class="r-heat" style="color:var(--text-secondary)">언급 176회</span></div>
+        <div class="recommend-item"><span class="r-rank">4</span><div style="flex:1"><div class="r-name">NAVER</div><div class="r-code">035420 · KOSPI</div></div><span class="r-heat" style="color:var(--text-secondary)">언급 143회</span></div>
+        <div class="recommend-item"><span class="r-rank">5</span><div style="flex:1"><div class="r-name">Tesla</div><div class="r-code">TSLA · NASDAQ</div></div><span class="r-heat" style="color:var(--text-secondary)">언급 98회</span></div>
+        <div class="recommend-item"><span class="r-rank">6</span><div style="flex:1"><div class="r-name">현대차</div><div class="r-code">005380 · KOSPI</div></div><span class="r-heat" style="color:var(--text-secondary)">언급 91회</span></div>
+        <div class="recommend-item"><span class="r-rank">7</span><div style="flex:1"><div class="r-name">NVIDIA</div><div class="r-code">NVDA · NASDAQ</div></div><span class="r-heat" style="color:var(--text-secondary)">언급 87회</span></div>
+        <div style="margin-top:14px;padding:10px;background:var(--surface);border-radius:6px;border:1px solid var(--border);font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+          💡 AI 추천: 오늘 <strong style="color:var(--positive)">SK하이닉스</strong>와 <strong style="color:var(--positive)">삼성전자</strong>의 뉴스 흐름이 매우 긍정적입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- MY BASKET GRID -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-secondary);">🧺 내 바구니 (5종목)</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" style="font-size:11.5px;">정렬: 영향력 순</button>
+        <button class="btn btn-ghost" style="font-size:11.5px;">⚙️ 일괄 설정</button>
+      </div>
+    </div>
+
+    <div class="basket-grid">
+
+      <div class="basket-card" onclick="location.href='stock-detail.html'">
+        <div class="basket-card-top">
+          <div class="bc-logo">💠</div>
+          <button class="bc-remove" onclick="event.stopPropagation();if(confirm('삼성전자를 바구니에서 제거할까요?'))this.closest('.basket-card').remove()">✕</button>
+        </div>
+        <div class="bc-name">삼성전자 <span class="bc-market-badge">KOSPI</span></div>
+        <div class="bc-code">005930</div>
+        <div class="bc-price-row" style="margin-top:10px;">
+          <div class="bc-price">84,200</div>
+          <div class="bc-change" style="color:var(--positive)">▲ +1.82%</div>
+        </div>
+        <div class="bc-news-row">
+          <span class="bc-news-pill good">🟢 호재 7</span>
+          <span class="bc-news-pill bad">🔴 악재 3</span>
+          <span class="bc-news-pill mid">🟡 중립 2</span>
+        </div>
+        <div class="bc-alert-row">🔕 알림 없음 · 하루 10회 크롤링</div>
+      </div>
+
+      <div class="basket-card" onclick="location.href='stock-detail.html'">
+        <div class="basket-card-top">
+          <div class="bc-logo">📱</div>
+          <button class="bc-remove" onclick="event.stopPropagation();if(confirm('카카오를 바구니에서 제거할까요?'))this.closest('.basket-card').remove()">✕</button>
+        </div>
+        <div class="bc-name">카카오 <span class="bc-market-badge">KOSPI</span></div>
+        <div class="bc-code">035720</div>
+        <div class="bc-price-row" style="margin-top:10px;">
+          <div class="bc-price">42,150</div>
+          <div class="bc-change" style="color:var(--negative)">▼ -4.20%</div>
+        </div>
+        <div class="bc-news-row">
+          <span class="bc-news-pill good">🟢 호재 2</span>
+          <span class="bc-news-pill bad">🔴 악재 6</span>
+        </div>
+        <div class="bc-alert-row has-alert">⚡ 급락 -4.2% 감지 · 원인 분석 완료</div>
+      </div>
+
+      <div class="basket-card" onclick="location.href='stock-detail.html'">
+        <div class="basket-card-top">
+          <div class="bc-logo">🔷</div>
+          <button class="bc-remove" onclick="event.stopPropagation();if(confirm('SK하이닉스를 바구니에서 제거할까요?'))this.closest('.basket-card').remove()">✕</button>
+        </div>
+        <div class="bc-name">SK하이닉스 <span class="bc-market-badge">KOSPI</span></div>
+        <div class="bc-code">000660</div>
+        <div class="bc-price-row" style="margin-top:10px;">
+          <div class="bc-price">192,500</div>
+          <div class="bc-change" style="color:var(--positive)">▲ +3.11%</div>
+        </div>
+        <div class="bc-news-row">
+          <span class="bc-news-pill good">🟢 호재 8</span>
+          <span class="bc-news-pill bad">🔴 악재 2</span>
+        </div>
+        <div class="bc-alert-row">🔕 알림 없음 · 하루 10회 크롤링</div>
+      </div>
+
+      <div class="basket-card" onclick="location.href='stock-detail.html'">
+        <div class="basket-card-top">
+          <div class="bc-logo">🟩</div>
+          <button class="bc-remove" onclick="event.stopPropagation();if(confirm('NAVER를 바구니에서 제거할까요?'))this.closest('.basket-card').remove()">✕</button>
+        </div>
+        <div class="bc-name">NAVER <span class="bc-market-badge">KOSPI</span></div>
+        <div class="bc-code">035420</div>
+        <div class="bc-price-row" style="margin-top:10px;">
+          <div class="bc-price">214,000</div>
+          <div class="bc-change" style="color:var(--negative)">▼ -0.23%</div>
+        </div>
+        <div class="bc-news-row">
+          <span class="bc-news-pill good">🟢 호재 3</span>
+          <span class="bc-news-pill bad">🔴 악재 3</span>
+        </div>
+        <div class="bc-alert-row">🔕 알림 없음 · 하루 10회 크롤링</div>
+      </div>
+
+      <div class="basket-card" onclick="location.href='stock-detail.html'">
+        <div class="basket-card-top">
+          <div class="bc-logo">🚗</div>
+          <button class="bc-remove" onclick="event.stopPropagation();if(confirm('현대차를 바구니에서 제거할까요?'))this.closest('.basket-card').remove()">✕</button>
+        </div>
+        <div class="bc-name">현대차 <span class="bc-market-badge">KOSPI</span></div>
+        <div class="bc-code">005380</div>
+        <div class="bc-price-row" style="margin-top:10px;">
+          <div class="bc-price">271,000</div>
+          <div class="bc-change" style="color:var(--positive)">▲ +2.45%</div>
+        </div>
+        <div class="bc-news-row">
+          <span class="bc-news-pill good">🟢 호재 5</span>
+          <span class="bc-news-pill bad">🔴 악재 1</span>
+        </div>
+        <div class="bc-alert-row">🔕 알림 없음 · 하루 10회 크롤링</div>
+      </div>
+
+      <div class="basket-add-card" onclick="document.getElementById('searchInput').focus()">
+        <div class="add-icon">+</div>
+        <div class="add-text">종목 추가하기</div>
+        <div style="font-size:11px;color:var(--text-muted)">25개 더 추가 가능</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function setMarket(m, el) {
+  document.querySelectorAll('.market-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function handleSearch(v) {
+  // Mock search - in real app this would query API
+}
+function addStock(el, name, code, market) {
+  const btn = el.querySelector('.sr-add-btn');
+  if(btn.classList.contains('added')) return;
+  btn.classList.add('added');
+  btn.textContent = '✓ 추가됨';
+  el.classList.add('adding');
+  setTimeout(() => { alert(name + '이(가) 바구니에 추가되었습니다! 다음 크롤링 시 뉴스 분석이 시작됩니다.'); }, 100);
+}
+</script>
+</body>
+</html>

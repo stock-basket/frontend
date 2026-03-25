@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 바구니 — AI 뉴스 분석 플랫폼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #10121a;
+  --surface: #181b27;
+  --card: #1e2235;
+  --border: #2a2e45;
+  --text-primary: #e4e7f2;
+  --text-secondary: #8890ae;
+  --text-muted: #555d7a;
+  --positive: #34d399;
+  --negative: #f87171;
+  --neutral: #fbbf24;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── BG Grid ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(129,140,248,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(129,140,248,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 60px;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(16,18,26,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo .logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), #6366f1);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.nav-logo .logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+.nav-logo .logo-sub {
+  font-size: 9px; color: var(--text-muted);
+  font-family: 'DM Mono', monospace; letter-spacing: 2px; text-transform: uppercase;
+}
+
+.nav-links { display: flex; align-items: center; gap: 6px; }
+.nav-links a {
+  padding: 8px 16px; border-radius: 7px;
+  font-size: 13.5px; font-weight: 500; color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.nav-links a:hover { background: var(--card); color: var(--text-primary); }
+.nav-cta {
+  background: var(--accent); color: #fff !important;
+  padding: 8px 20px; border-radius: 7px;
+  font-size: 13.5px; font-weight: 700;
+  transition: background 0.15s !important;
+}
+.nav-cta:hover { background: var(--accent-hover) !important; }
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 120px 40px 80px;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(129,140,248,0.1);
+  border: 1px solid rgba(129,140,248,0.25);
+  border-radius: 30px;
+  padding: 5px 14px;
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  font-family: 'DM Mono', monospace; letter-spacing: 1px;
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-badge::before { content: '●'; font-size: 7px; animation: pulse 2s infinite; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.hero-title {
+  font-size: clamp(44px, 7vw, 80px);
+  font-weight: 900;
+  letter-spacing: -2.5px;
+  line-height: 1.05;
+  margin-bottom: 8px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero-title .accent { color: var(--accent); }
+.hero-title .positive { color: var(--positive); }
+.hero-title .negative { color: var(--negative); }
+
+.hero-sub {
+  font-size: 17px; color: var(--text-secondary);
+  max-width: 560px;
+  margin: 20px auto 48px;
+  font-weight: 400;
+  line-height: 1.7;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex; align-items: center; gap: 12px;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.btn-hero-primary {
+  background: var(--accent); color: #fff;
+  padding: 14px 32px; border-radius: 9px;
+  font-size: 15px; font-weight: 700;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-hero-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+
+.btn-hero-ghost {
+  background: transparent; color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 14px 28px; border-radius: 9px;
+  font-size: 15px; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-hero-ghost:hover { background: var(--card); color: var(--text-primary); }
+
+/* ── MOCK DASHBOARD PREVIEW ── */
+.hero-preview {
+  position: relative; z-index: 1;
+  margin: 70px auto 0;
+  max-width: 900px; width: 100%;
+  animation: fadeUp 0.7s 0.4s ease both;
+}
+
+.preview-frame {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.1);
+}
+
+.preview-topbar {
+  background: var(--card);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+.preview-dot:nth-child(1) { background: #ff5f57; }
+.preview-dot:nth-child(2) { background: #ffbd2e; }
+.preview-dot:nth-child(3) { background: #28c840; }
+
+.preview-body {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  height: 360px;
+}
+.preview-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+}
+.preview-sidebar-item {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.preview-sidebar-item.active {
+  background: rgba(129,140,248,0.1);
+  color: var(--accent);
+}
+.preview-sidebar-item .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+
+.preview-main { padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.preview-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.preview-stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.preview-stat .label { font-size: 9px; color: var(--text-muted); font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.preview-stat .value { font-size: 15px; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 2px; }
+.preview-stat .change { font-size: 10px; margin-top: 1px; font-family: 'DM Mono', monospace; }
+
+.preview-news-list { display: flex; flex-direction: column; gap: 6px; }
+
+.preview-news-card {
+  background: var(--card); border-radius: 7px;
+  padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start;
+  border-left: 3px solid transparent;
+  position: relative;
+}
+
+.preview-news-card.good { border-left-color: var(--positive); }
+.preview-news-card.bad  { border-left-color: var(--negative); }
+.preview-news-card.mid  { border-left-color: var(--neutral); }
+
+.preview-news-chip {
+  font-size: 9px; padding: 2px 6px; border-radius: 4px;
+  font-family: 'DM Mono', monospace; font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.preview-news-chip.good { background: rgba(52,211,153,0.15); color: var(--positive); }
+.preview-news-chip.bad  { background: rgba(248,113,113,0.15); color: var(--negative); }
+.preview-news-chip.mid  { background: rgba(251,191,36,0.15); color: var(--neutral); }
+
+.preview-news-text { font-size: 10.5px; color: var(--text-secondary); line-height: 1.4; flex: 1; }
+.preview-news-impact { font-size: 9px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
+.preview-news-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.preview-news-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ── FEATURES ── */
+.section {
+  position: relative; z-index: 1;
+  padding: 100px 60px;
+}
+
+.section-label {
+  font-size: 10px; font-family: 'DM Mono', monospace;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800; letter-spacing: -1.5px;
+  line-height: 1.1; margin-bottom: 20px;
+}
+.section-sub { font-size: 16px; color: var(--text-secondary); max-width: 520px; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 60px;
+}
+
+.feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.feature-card:hover::before { opacity: 1; }
+.feature-card:hover { background: var(--card-hover, #242840); transform: translateY(-2px); }
+
+.feature-icon {
+  font-size: 28px; margin-bottom: 18px;
+  width: 52px; height: 52px;
+  background: var(--surface);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+}
+
+.feature-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.feature-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+
+/* ── HOW IT WORKS ── */
+.steps { position: relative; z-index: 1; padding: 80px 60px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; margin-top: 60px; position: relative; }
+.steps-grid::before {
+  content: '';
+  position: absolute;
+  top: 30px; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.step { text-align: center; position: relative; }
+.step-number {
+  width: 52px; height: 52px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 15px; font-weight: 500; color: var(--accent);
+  margin: 0 auto 18px;
+  position: relative; z-index: 1;
+}
+.step-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.step-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ── CTA SECTION ── */
+.cta-section {
+  position: relative; z-index: 1;
+  padding: 100px 60px;
+  text-align: center;
+}
+
+.cta-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 70px 60px;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(129,140,248,0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.cta-box .section-title { max-width: 500px; margin: 0 auto 16px; }
+.cta-box .section-sub { margin: 0 auto 36px; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 36px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.footer-copy { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 12px; color: var(--text-muted); transition: color 0.15s; }
+.footer-links a:hover { color: var(--text-secondary); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TICKER ── */
+.ticker-wrap {
+  position: relative; z-index: 1;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  overflow: hidden;
+}
+.ticker {
+  display: flex; gap: 40px;
+  animation: ticker 30s linear infinite;
+  width: max-content;
+}
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-item {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  white-space: nowrap;
+}
+.ticker-item .name { color: var(--text-secondary); }
+.ticker-item .price { color: var(--text-primary); }
+.ticker-item .up { color: var(--positive); }
+.ticker-item .dn { color: var(--negative); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">🧺</div>
+    <div>
+      <div class="logo-text">주식 바구니</div>
+      <div class="logo-sub">AI NEWS INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#features">기능</a>
+    <a href="#how">작동 방식</a>
+    <a href="login.html">로그인</a>
+    <a href="register.html" class="nav-cta">무료 시작하기 →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">AI POWERED · 실시간 뉴스 분석 · BETA</div>
+  <h1 class="hero-title">
+    <span class="positive">호재</span>인지 <span class="negative">악재</span>인지<br>
+    <span class="accent">1초</span> 만에 파악하세요
+  </h1>
+  <p class="hero-sub">
+    보유 종목의 뉴스를 AI가 실시간 분석하여 영향력과 방향성을 시각화합니다.<br>
+    급등락의 이유를 빠르게 파악하고, 중요한 뉴스를 놓치지 마세요.
+  </p>
+  <div class="hero-actions">
+    <a href="register.html" class="btn-hero-primary">지금 바구니 만들기 🧺</a>
+    <a href="dashboard.html" class="btn-hero-ghost">대시보드 미리보기</a>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="hero-preview">
+    <div class="preview-frame">
+      <div class="preview-topbar">
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-sidebar">
+          <div style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;padding:4px 10px 8px;">내 바구니</div>
+          <div class="preview-sidebar-item active">
+            <span class="dot" style="background:var(--positive)"></span>삼성전자
+          </div>
+          <div class="preview-sidebar-item">
+            <span class="dot" style="background:var(--negative)"></span>카카오
+          </div>
+          <div class="preview-sidebar-item">
+            <span class="dot" style="background:var(--positive)"></span>SK하이닉스
+          </div>
+          <div class="preview-sidebar-item">
+            <span class="dot" style="background:var(--neutral)"></span>NAVER
+          </div>
+          <div class="preview-sidebar-item">
+            <span class="dot" style="background:var(--positive)"></span>현대차
+          </div>
+          <div style="margin-top:12px;font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;padding:4px 10px 8px;">분석 현황</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--text-secondary);">오늘 뉴스 <span style="color:var(--accent);font-weight:700;">42건</span></div>
+          <div style="padding:2px 10px;font-size:10px;color:var(--text-secondary);">호재 <span style="color:var(--positive);">28</span> / 악재 <span style="color:var(--negative);">14</span></div>
+        </div>
+        <div class="preview-main">
+          <div class="preview-stats">
+            <div class="preview-stat">
+              <div class="label">포트폴리오</div>
+              <div class="value" style="color:var(--positive)">+2.34%</div>
+              <div class="change" style="color:var(--positive)">▲ 오늘</div>
+            </div>
+            <div class="preview-stat">
+              <div class="label">호재 뉴스</div>
+              <div class="value" style="color:var(--text-primary)">28건</div>
+              <div class="change" style="color:var(--positive)">▲ +8 급증</div>
+            </div>
+            <div class="preview-stat">
+              <div class="label">긴급 알림</div>
+              <div class="value" style="color:var(--negative)">3건</div>
+              <div class="change" style="color:var(--negative)">● 확인 필요</div>
+            </div>
+          </div>
+          <div class="preview-news-list">
+            <div class="preview-news-card good">
+              <div class="preview-news-chip good">호재</div>
+              <div style="flex:1">
+                <div class="preview-news-text">삼성전자, 엔비디아와 HBM4 공급 계약 체결 임박... 수주 규모 10조원 전망</div>
+                <div class="preview-news-impact">영향력 ██████████░░ 83%</div>
+              </div>
+            </div>
+            <div class="preview-news-card bad">
+              <div class="preview-news-chip bad">악재</div>
+              <div style="flex:1">
+                <div class="preview-news-text">카카오 계열사 SM엔터 주식 거래 관련 금감원 조사 확대 가능성</div>
+                <div class="preview-news-impact">영향력 ████░░░░░░░░ 35%</div>
+              </div>
+            </div>
+            <div class="preview-news-card mid">
+              <div class="preview-news-chip mid">중립</div>
+              <div style="flex:1">
+                <div class="preview-news-text">NAVER, 웹툰 분기 실적 예상치 소폭 하회... 글로벌 MAU는 증가</div>
+                <div class="preview-news-impact">영향력 ██████░░░░░░ 52%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <!-- repeated for loop effect -->
+    <div class="ticker-item"><span class="name">005930</span><span class="price">84,200</span><span class="up">▲ +1.82%</span></div>
+    <div class="ticker-item"><span class="name">035720</span><span class="price">42,150</span><span class="dn">▼ -0.94%</span></div>
+    <div class="ticker-item"><span class="name">000660</span><span class="price">192,500</span><span class="up">▲ +3.11%</span></div>
+    <div class="ticker-item"><span class="name">035420</span><span class="price">214,000</span><span class="dn">▼ -0.23%</span></div>
+    <div class="ticker-item"><span class="name">005380</span><span class="price">271,000</span><span class="up">▲ +2.45%</span></div>
+    <div class="ticker-item"><span class="name">NVDA</span><span class="price">$142.30</span><span class="up">▲ +4.20%</span></div>
+    <div class="ticker-item"><span class="name">AAPL</span><span class="price">$218.10</span><span class="up">▲ +0.55%</span></div>
+    <div class="ticker-item"><span class="name">TSLA</span><span class="price">$192.60</span><span class="dn">▼ -2.14%</span></div>
+    <!-- duplicate -->
+    <div class="ticker-item"><span class="name">005930</span><span class="price">84,200</span><span class="up">▲ +1.82%</span></div>
+    <div class="ticker-item"><span class="name">035720</span><span class="price">42,150</span><span class="dn">▼ -0.94%</span></div>
+    <div class="ticker-item"><span class="name">000660</span><span class="price">192,500</span><span class="up">▲ +3.11%</span></div>
+    <div class="ticker-item"><span class="name">035420</span><span class="price">214,000</span><span class="dn">▼ -0.23%</span></div>
+    <div class="ticker-item"><span class="name">005380</span><span class="price">271,000</span><span class="up">▲ +2.45%</span></div>
+    <div class="ticker-item"><span class="name">NVDA</span><span class="price">$142.30</span><span class="up">▲ +4.20%</span></div>
+    <div class="ticker-item"><span class="name">AAPL</span><span class="price">$218.10</span><span class="up">▲ +0.55%</span></div>
+    <div class="ticker-item"><span class="name">TSLA</span><span class="price">$192.60</span><span class="dn">▼ -2.14%</span></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">CORE FEATURES</div>
+  <h2 class="section-title">뉴스를 보는 방식을<br>바꿉니다</h2>
+  <p class="section-sub">기존 증권사 앱의 텍스트 나열 방식에서 벗어나, AI가 분석한 뉴스를 시각적으로 계층화합니다.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">호재 / 악재 즉시 판단</div>
+      <div class="feature-desc">AI가 뉴스 본문을 분석하여 해당 종목에 긍정적인지 부정적인지를 색상과 아이콘으로 즉시 구분합니다. 제목만 봐도 판단 가능.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">영향력 점수 시각화</div>
+      <div class="feature-desc">뉴스의 중요도를 0-100점으로 정량화. 기관 발표, 실적, 정책 변화 등 파급력이 큰 뉴스를 최상단에 자동 배치합니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">급등락 즉시 원인 분석</div>
+      <div class="feature-desc">종목이 ±3% 이상 변동될 때 즉시 알림과 함께 원인 뉴스를 자동으로 수집·분석하여 보고서를 생성합니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧺</div>
+      <div class="feature-title">나만의 종목 바구니</div>
+      <div class="feature-desc">관심 종목을 바구니에 담아 관리하세요. 국내·해외 주식 모두 지원하며, 하루 최대 10번 자동 크롤링됩니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-title">맞춤 알림 설정</div>
+      <div class="feature-desc">영향력 점수 70점 이상인 뉴스, 특정 키워드가 포함된 뉴스, 급등락 감지 등 조건별 알림을 세밀하게 설정합니다.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <div class="feature-title">뉴스-주가 상관관계</div>
+      <div class="feature-desc">과거 뉴스와 주가 움직임의 상관관계를 분석하여, 어떤 유형의 뉴스가 실제 주가에 영향을 줬는지 히스토리로 보여줍니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps" id="how">
+  <div style="text-align:center;">
+    <div class="section-label">HOW IT WORKS</div>
+    <h2 class="section-title">4단계로 완성되는<br>AI 뉴스 분석</h2>
+  </div>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-number">01</div>
+      <div class="step-title">종목 등록</div>
+      <div class="step-desc">관심 종목을 바구니에 추가합니다. 검색 한 번으로 국내외 주식 모두 등록 가능.</div>
+    </div>
+    <div class="step">
+      <div class="step-number">02</div>
+      <div class="step-title">AI 크롤링</div>
+      <div class="step-desc">하루 n번 스케줄에 따라 AI가 각 종목 관련 뉴스를 자동으로 수집합니다.</div>
+    </div>
+    <div class="step">
+      <div class="step-number">03</div>
+      <div class="step-title">분석 & 분류</div>
+      <div class="step-desc">호재/악재 판별, 영향력 점수 산정, 관련 테마 태깅이 자동으로 이루어집니다.</div>
+    </div>
+    <div class="step">
+      <div class="step-number">04</div>
+      <div class="step-title">시각적 리포트</div>
+      <div class="step-desc">중요도 순서로 정렬된 뉴스를 한눈에 확인. 급등락 원인 리포트는 즉시 알림.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-box">
+    <div class="section-label">GET STARTED FREE</div>
+    <h2 class="section-title">지금 바로 시작하세요</h2>
+    <p class="section-sub">회원가입 후 5개 종목까지 무료로 사용할 수 있습니다.<br>신용카드 없이 즉시 시작 가능.</p>
+    <div style="display:flex;justify-content:center;gap:12px;margin-top:36px;">
+      <a href="register.html" class="btn-hero-primary">무료로 시작하기 →</a>
+      <a href="login.html" class="btn-hero-ghost">이미 계정이 있어요</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2026 주식 바구니 · AI NEWS INTELLIGENCE · BETA</div>
+  <div class="footer-links">
+    <a href="#">이용약관</a>
+    <a href="#">개인정보처리방침</a>
+    <a href="#">공지사항</a>
+    <a href="#">고객센터</a>
+  </div>
+</footer>
+
+</body>
+</html>

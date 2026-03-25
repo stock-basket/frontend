@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뉴스 상세 분석 — 주식 바구니</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── News Detail Specific ── */
+    .news-detail-layout {
+      padding: 28px 32px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 28px;
+      align-items: start;
+      max-width: 1200px;
+    }
+
+    /* ── Page header ── */
+    .page-header-bar {
+      padding: 20px 32px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-muted); cursor: pointer;
+      transition: color .2s;
+    }
+    .back-btn:hover { color: var(--text-primary); }
+    .breadcrumb-sep { color: var(--border-light); }
+    .breadcrumb-current { font-size: 12px; color: var(--text-primary); }
+
+    /* ── Main Article ── */
+    .article-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .article-verdict-bar {
+      height: 4px;
+      background: var(--negative);
+    }
+
+    .article-header { padding: 28px 28px 20px; }
+
+    .article-type-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+
+    .article-headline {
+      font-size: 20px; font-weight: 700;
+      line-height: 1.5; letter-spacing: -0.3px;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .article-meta-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding-bottom: 18px; border-bottom: 1px solid var(--border);
+    }
+    .meta-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .meta-item .label { font-size: 10px; letter-spacing: .4px; }
+    .meta-item .val { color: var(--text-secondary); }
+    .meta-sep { width: 1px; height: 12px; background: var(--border-light); }
+
+    /* ── Impact Score Hero ── */
+    .impact-hero {
+      margin: 20px 28px;
+      background: linear-gradient(135deg, rgba(248,113,113,.05), rgba(248,113,113,.02));
+      border: 1px solid var(--negative-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex; gap: 24px; align-items: center;
+    }
+    .impact-score-big {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 3px solid var(--negative);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--negative-bg);
+    }
+    .impact-score-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 26px; font-weight: 500;
+      color: var(--negative); line-height: 1;
+    }
+    .impact-score-label { font-size: 9px; color: var(--negative); margin-top: 2px; }
+    .impact-details { flex: 1; }
+    .impact-details-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px; }
+    .impact-metrics { display: flex; flex-direction: column; gap: 6px; }
+    .impact-metric { display: flex; align-items: center; gap: 8px; }
+    .impact-metric-label { font-size: 11px; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+    .impact-metric-bar { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .impact-metric-fill { height: 100%; border-radius: 3px; }
+    .impact-metric-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); width: 28px; text-align: right; }
+
+    /* ── AI Analysis Section ── */
+    .analysis-section { padding: 0 28px 24px; }
+    .analysis-section + .analysis-section { border-top: 1px solid var(--border); padding-top: 20px; }
+
+    .section-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px;
+    }
+    .section-head-icon { font-size: 16px; }
+    .section-head-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .section-head-badge {
+      margin-left: auto;
+      background: var(--accent-bg); color: var(--accent);
+      border: 1px solid rgba(129,140,248,.2);
+      border-radius: 4px; padding: 2px 7px;
+      font-size: 10px; font-weight: 600;
+    }
+
+    /* ── AI Analysis body ── */
+    .ai-analysis-body {
+      font-size: 13px; line-height: 1.9;
+      color: var(--text-secondary);
+    }
+    .ai-analysis-body p { margin-bottom: 12px; }
+    .ai-analysis-body p:last-child { margin-bottom: 0; }
+    .ai-analysis-body strong { color: var(--text-primary); }
+    .ai-analysis-body .highlight-neg {
+      background: var(--negative-bg);
+      color: var(--negative);
+      border-radius: 3px; padding: 0 4px;
+    }
+    .ai-analysis-body .highlight-pos {
+      background: var(--positive-bg);
+      color: var(--positive);
+      border-radius: 3px; padding: 0 4px;
+    }
+
+    /* ── Key points list ── */
+    .key-points { display: flex; flex-direction: column; gap: 8px; }
+    .key-point {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 10px 12px;
+      background: var(--surface); border-radius: 7px;
+      font-size: 12px; line-height: 1.6;
+    }
+    .kp-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .kp-text { color: var(--text-secondary); }
+    .kp-text strong { color: var(--text-primary); }
+
+    /* ── Related stock impact ── */
+    .affected-stocks { display: flex; flex-direction: column; gap: 8px; }
+    .affected-stock-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface); border-radius: 7px;
+    }
+    .aff-icon { font-size: 16px; flex-shrink: 0; }
+    .aff-info { flex: 1; }
+    .aff-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .aff-reason { font-size: 11px; color: var(--text-muted); }
+    .aff-impact {
+      font-size: 11px; font-family: 'DM Mono', monospace;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .aff-impact.neg { background: var(--negative-bg); color: var(--negative); }
+    .aff-impact.pos { background: var(--positive-bg); color: var(--positive); }
+    .aff-impact.neutral { background: var(--neutral-bg); color: var(--neutral); }
+
+    /* ── Original article ── */
+    .original-article-box {
+      margin: 0 28px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .oab-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .oab-title { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .oab-source { font-size: 11px; color: var(--text-muted); }
+    .oab-body {
+      padding: 16px;
+      font-size: 12px; line-height: 1.9;
+      color: var(--text-muted);
+    }
+    .oab-more {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: center;
+    }
+
+    /* ── Tags ── */
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tag {
+      background: var(--surface); color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 3px 9px; font-size: 11px;
+    }
+    .tag:hover { border-color: var(--border-light); color: var(--text-primary); cursor: pointer; }
+
+    /* ── Right sidebar ── */
+    .news-sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .sidebar-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .sidebar-card-title {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted); letter-spacing: .5px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* ── Mini impact gauge ── */
+    .gauge-wrap {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .gauge-row { display: flex; flex-direction: column; gap: 4px; }
+    .gauge-label-row { display: flex; justify-content: space-between; align-items: center; }
+    .gauge-name { font-size: 12px; color: var(--text-secondary); }
+    .gauge-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+    .gauge-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+
+    /* ── Related news cards ── */
+    .related-news-list { display: flex; flex-direction: column; gap: 10px; }
+    .related-news-item {
+      display: flex; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .related-news-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .related-news-item:hover { opacity: 0.75; }
+    .rni-indicator { width: 3px; border-radius: 2px; flex-shrink: 0; }
+    .rni-content { flex: 1; }
+    .rni-title { font-size: 11px; font-weight: 500; color: var(--text-primary); line-height: 1.5; margin-bottom: 4px; }
+    .rni-meta { display: flex; gap: 6px; }
+    .rni-score { font-family: 'DM Mono', monospace; font-size: 10px; }
+    .rni-time { font-size: 10px; color: var(--text-muted); }
+
+    /* ── Action buttons ── */
+    .action-buttons { display: flex; flex-direction: column; gap: 8px; }
+
+    /* ── Verdict summary ── */
+    .verdict-box {
+      background: var(--negative-bg);
+      border: 1px solid var(--negative-border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .verdict-box.positive-verdict {
+      background: var(--positive-bg);
+      border-color: var(--positive-border);
+    }
+    .verdict-box-title { font-size: 11px; font-weight: 600; color: var(--negative); margin-bottom: 8px; }
+    .verdict-box.positive-verdict .verdict-box-title { color: var(--positive); }
+    .verdict-box-text { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* Confidence stars */
+    .confidence-stars { display: flex; gap: 3px; }
+    .star { font-size: 13px; color: var(--neutral); }
+    .star.empty { color: var(--border-light); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📊</div>
+      <div>
+        <div class="logo-text">주식 바구니</div>
+        <div class="logo-sub" style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;">AI NEWS BASKET</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" style="padding:12px 0;flex:1;">
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⚡</span> 대시보드</a>
+      <a href="stocks.html" class="nav-item"><span class="nav-icon">📁</span> 내 바구니</a>
+      <a href="news.html" class="nav-item active"><span class="nav-icon">📰</span> 뉴스 피드</a>
+      <div style="height:1px;background:var(--border);margin:10px 16px;"></div>
+      <div style="padding:8px 20px;font-size:10px;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;">분석 도구</div>
+      <a href="#" class="nav-item"><span class="nav-icon">📈</span> 수익률 분석</a>
+      <a href="#" class="nav-item"><span class="nav-icon">🔔</span> 알림 설정</a>
+      <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> 설정</a>
+    </nav>
+    <div class="sidebar-bottom" style="padding:16px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6366f1);display:flex;align-items:center;justify-content:center;font-size:13px;">👤</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);">김주식</div>
+          <div style="font-size:10px;color:var(--text-muted);">PRO 플랜</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <!-- Back nav -->
+    <div class="page-header-bar">
+      <a href="news.html" class="back-btn">← 뉴스 피드</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="stock-detail.html" class="back-btn">삼성전자</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">뉴스 상세</span>
+    </div>
+
+    <div class="news-detail-layout">
+
+      <!-- Left: Article -->
+      <div>
+        <div class="article-card">
+
+          <!-- Verdict color bar top -->
+          <div class="article-verdict-bar"></div>
+
+          <!-- Header -->
+          <div class="article-header">
+            <div class="article-type-row">
+              <span class="chip chip-negative">⚠️ 악재</span>
+              <span class="chip" style="background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.2);font-size:11px;padding:2px 8px;">⚡ 급락 트리거 분석</span>
+              <span class="chip chip-accent" style="margin-left:auto;">AI 분석 완료</span>
+            </div>
+            <h1 class="article-headline">
+              삼성전자 HBM3E 엔비디아 납품 또 지연… "수율 개선 난항, 3분기로 밀릴 수도"
+            </h1>
+            <div class="article-meta-row">
+              <div class="meta-item">
+                <span class="label">출처</span>
+                <span class="val">한국경제</span>
+              </div>
+              <div class="meta-sep"></div>
+              <div class="meta-item">
+                <span class="label">발행</span>
+                <span class="val" style="font-family:'DM Mono',monospace;">2025.03.18 14:18</span>
+              </div>
+              <div class="meta-sep"></div>
+              <div class="meta-item">
+                <span class="label">수집</span>
+                <span class="val" style="font-family:'DM Mono',monospace;">14:19 (+1분)</span>
+              </div>
+              <div class="meta-sep"></div>
+              <div class="meta-item">
+                <span>📎 삼성전자</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Impact Score Hero -->
+          <div class="impact-hero">
+            <div class="impact-score-big">
+              <div class="impact-score-num">87</div>
+              <div class="impact-score-label">영향력</div>
+            </div>
+            <div class="impact-details">
+              <div class="impact-details-title">🤖 AI 영향력 세부 분석</div>
+              <div class="impact-metrics">
+                <div class="impact-metric">
+                  <div class="impact-metric-label">시장 충격도</div>
+                  <div class="impact-metric-bar"><div class="impact-metric-fill" style="width:92%;background:var(--negative);"></div></div>
+                  <div class="impact-metric-val">92</div>
+                </div>
+                <div class="impact-metric">
+                  <div class="impact-metric-label">뉴스 신뢰도</div>
+                  <div class="impact-metric-bar"><div class="impact-metric-fill" style="width:85%;background:var(--accent);"></div></div>
+                  <div class="impact-metric-val">85</div>
+                </div>
+                <div class="impact-metric">
+                  <div class="impact-metric-label">단기 영향</div>
+                  <div class="impact-metric-bar"><div class="impact-metric-fill" style="width:90%;background:var(--negative);"></div></div>
+                  <div class="impact-metric-val">90</div>
+                </div>
+                <div class="impact-metric">
+                  <div class="impact-metric-label">장기 영향</div>
+                  <div class="impact-metric-bar"><div class="impact-metric-fill" style="width:55%;background:var(--neutral);"></div></div>
+                  <div class="impact-metric-val">55</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Analysis -->
+          <div class="analysis-section">
+            <div class="section-head">
+              <span class="section-head-icon">🤖</span>
+              <div class="section-head-title">AI 뉴스 분석</div>
+              <span class="section-head-badge">GPT-4o 분석</span>
+            </div>
+            <div class="ai-analysis-body">
+              <p>
+                이 뉴스는 삼성전자의 <strong>HBM3E(High Bandwidth Memory 3E)</strong> 제품이 엔비디아에 대한 납품 일정이
+                기존 2분기에서 <span class="highlight-neg">3분기로 지연</span>될 수 있다는 내용을 담고 있습니다.
+                수율(良品率) 개선이 당초 계획보다 더디게 진행되고 있는 것으로 알려졌습니다.
+              </p>
+              <p>
+                HBM3E는 삼성전자 DS(디바이스솔루션) 부문의 핵심 성장 제품으로,
+                <strong>엔비디아 H200·B200 GPU에 탑재</strong>되어 연간 수조 원의 매출이 기대되는 품목입니다.
+                납품 지연이 현실화될 경우 <span class="highlight-neg">2025년 2분기 실적에 직접적 타격</span>이 불가피하며,
+                경쟁사 SK하이닉스가 HBM3E 공급 주도권을 강화할 가능성이 높아집니다.
+              </p>
+              <p>
+                시장은 이 보도에 즉각 반응하여 삼성전자 주가가 발행 후 10분 내 <span class="highlight-neg">−0.8% 추가 하락</span>했습니다.
+                외신(로이터, 블룸버그)이 동일 이슈를 반복 보도하며 글로벌 투자자들의 주목도가 높아지고 있어,
+                단기 매도 심리는 더욱 강해질 것으로 판단됩니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- Key points -->
+          <div class="analysis-section">
+            <div class="section-head">
+              <span class="section-head-icon">📍</span>
+              <div class="section-head-title">핵심 포인트</div>
+            </div>
+            <div class="key-points">
+              <div class="key-point">
+                <span class="kp-icon">🔴</span>
+                <div class="kp-text"><strong>납품 지연 리스크:</strong> HBM3E 수율 85% 이하 유지 시 엔비디아와의 공급 계약 조건 미달 가능성. 대체 공급사(SK하이닉스, 마이크론) 선호도 상승.</div>
+              </div>
+              <div class="key-point">
+                <span class="kp-icon">🔴</span>
+                <div class="kp-text"><strong>실적 하향 리스크:</strong> 2025년 DS 부문 영업이익 컨센서스 기준 ~4.2조 원 규모가 불확실해짐. 증권사 일부 TP 하향 예상.</div>
+              </div>
+              <div class="key-point">
+                <span class="kp-icon">🟡</span>
+                <div class="kp-text"><strong>경쟁사 수혜 가능:</strong> SK하이닉스는 HBM3 공급에서 앞선 만큼 이번 이슈로 반사 이익 기대. 단기 수급 차별화 예상.</div>
+              </div>
+              <div class="key-point">
+                <span class="kp-icon">🟢</span>
+                <div class="kp-text"><strong>중장기 관점 유효:</strong> 삼성전자의 파운드리 + 메모리 수직 계열화 강점은 유효. 3Q25 납품 정상화 시 주가 반등 여력 존재.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affected stocks -->
+          <div class="analysis-section">
+            <div class="section-head">
+              <span class="section-head-icon">📊</span>
+              <div class="section-head-title">연관 종목 영향 분석</div>
+            </div>
+            <div class="affected-stocks">
+              <div class="affected-stock-row">
+                <span class="aff-icon">📱</span>
+                <div class="aff-info">
+                  <div class="aff-name">삼성전자 (005930)</div>
+                  <div class="aff-reason">뉴스 주체 — 직접적 실적 영향</div>
+                </div>
+                <span class="aff-impact neg">직접 악재 ↓↓</span>
+              </div>
+              <div class="affected-stock-row">
+                <span class="aff-icon">💾</span>
+                <div class="aff-info">
+                  <div class="aff-name">SK하이닉스 (000660)</div>
+                  <div class="aff-reason">HBM 시장 경쟁사 — 반사 수혜 예상</div>
+                </div>
+                <span class="aff-impact pos">반사 호재 ↑</span>
+              </div>
+              <div class="affected-stock-row">
+                <span class="aff-icon">🖥️</span>
+                <div class="aff-info">
+                  <div class="aff-name">NVIDIA (NVDA)</div>
+                  <div class="aff-reason">주요 고객사 — 공급망 불안이나 대체 가능</div>
+                </div>
+                <span class="aff-impact neutral">중립 →</span>
+              </div>
+              <div class="affected-stock-row">
+                <span class="aff-icon">📡</span>
+                <div class="aff-info">
+                  <div class="aff-name">한미반도체 (042700)</div>
+                  <div class="aff-reason">HBM 후공정 장비 — HBM 생산 차질로 수요 감소 우려</div>
+                </div>
+                <span class="aff-impact neg">간접 악재 ↓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Original Article Preview -->
+          <div class="original-article-box">
+            <div class="oab-header">
+              <div class="oab-title">원문 기사</div>
+              <div class="oab-source">한국경제 · 2025.03.18 14:18</div>
+            </div>
+            <div class="oab-body">
+              삼성전자가 엔비디아에 공급하기로 한 HBM3E(5세대 고대역폭메모리) 납품이 또다시 지연될 수 있다는 관측이
+              나오고 있다. 당초 2분기 납품을 목표로 하고 있었지만 수율 개선이 여전히 어려움을 겪고 있어 일정이
+              3분기로 밀릴 수 있다는 우려가 업계에서 제기되고 있다. <br/><br/>
+              반도체 업계에 따르면 삼성전자는 현재 HBM3E 양산 수율이 목표치에 미치지 못하는 상황이다.
+              엔비디아가 요구하는 품질 기준을 맞추기 위해 공정 개선 작업이 진행 중이지만 당초 예상보다
+              시간이 더 걸리고 있는 것으로 알려졌다...
+            </div>
+            <div class="oab-more">
+              <a href="#" class="btn btn-ghost btn-sm" onclick="alert('외부 원문 링크로 이동합니다.')">원문 전체 보기 →</a>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div style="padding: 16px 28px 24px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">관련 태그</div>
+            <div class="tags-wrap">
+              <span class="tag">#HBM3E</span>
+              <span class="tag">#삼성전자</span>
+              <span class="tag">#엔비디아</span>
+              <span class="tag">#반도체</span>
+              <span class="tag">#수율</span>
+              <span class="tag">#납품지연</span>
+              <span class="tag">#DS부문</span>
+              <span class="tag">#AI메모리</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="news-sidebar">
+
+        <!-- AI Verdict -->
+        <div class="verdict-box">
+          <div class="verdict-box-title">⚠️ AI 최종 판단: 강한 악재</div>
+          <div class="verdict-box-text">
+            이 뉴스는 삼성전자에 대해 <strong>단기 매도 압력을 높이는 요인</strong>입니다.
+            납품 지연이 실적과 직접 연결되며, 외신 확산 시 추가 하락 가능성이 있습니다.
+          </div>
+        </div>
+
+        <!-- AI confidence -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">AI 분석 신뢰도</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="confidence-stars">
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star empty">★</span>
+            </div>
+            <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--neutral);">4.2 / 5</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.7;">
+            복수 언론사 교차 확인 완료. 익명 소식통 기반으로 신뢰도 일부 감점. 공식 발표 시 재분석 예정.
+          </div>
+        </div>
+
+        <!-- Impact gauge -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">영향력 상세</div>
+          <div class="gauge-wrap">
+            <div class="gauge-row">
+              <div class="gauge-label-row">
+                <span class="gauge-name">시장 충격도</span>
+                <span class="gauge-val">92</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:92%;background:var(--negative);"></div></div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-label-row">
+                <span class="gauge-name">뉴스 신뢰도</span>
+                <span class="gauge-val">85</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:85%;background:var(--accent);"></div></div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-label-row">
+                <span class="gauge-name">단기 영향 (1주)</span>
+                <span class="gauge-val">90</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:90%;background:var(--negative);"></div></div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-label-row">
+                <span class="gauge-name">중기 영향 (1달)</span>
+                <span class="gauge-val">68</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:68%;background:var(--neutral);"></div></div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-label-row">
+                <span class="gauge-name">장기 영향 (3달)</span>
+                <span class="gauge-val">40</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:40%;background:var(--positive);"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">빠른 액션</div>
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="alert('삼성전자에 대한 알림이 설정되었습니다.')">🔔 삼성전자 알림 강화</button>
+            <a href="stock-detail.html" class="btn btn-ghost" style="text-align:center;">📊 종목 상세 분석 보기</a>
+            <button class="btn btn-ghost" onclick="alert('뉴스가 공유되었습니다.')">📤 뉴스 공유</button>
+          </div>
+        </div>
+
+        <!-- Related news -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">연관 뉴스</div>
+          <div class="related-news-list">
+            <a href="news-detail.html" class="related-news-item">
+              <div class="rni-indicator" style="background:var(--negative);"></div>
+              <div class="rni-content">
+                <div class="rni-title">SK하이닉스, HBM3E 엔비디아 독점 공급 재확인… 삼성과 격차 벌어지나</div>
+                <div class="rni-meta">
+                  <span class="rni-score" style="color:var(--negative);">악재 74</span>
+                  <span class="rni-time">13:52</span>
+                </div>
+              </div>
+            </a>
+            <a href="news-detail.html" class="related-news-item">
+              <div class="rni-indicator" style="background:var(--negative);"></div>
+              <div class="rni-content">
+                <div class="rni-title">메모리 D램 현물가 하락 지속… 1Q 마진 압박 우려</div>
+                <div class="rni-meta">
+                  <span class="rni-score" style="color:var(--negative);">악재 61</span>
+                  <span class="rni-time">11:30</span>
+                </div>
+              </div>
+            </a>
+            <a href="news-detail.html" class="related-news-item">
+              <div class="rni-indicator" style="background:var(--positive);"></div>
+              <div class="rni-content">
+                <div class="rni-title">美 AI 투자 급증, 반도체 장기 수요 견조 — 삼성 중장기 수혜 기대</div>
+                <div class="rni-meta">
+                  <span class="rni-score" style="color:var(--positive);">호재 68</span>
+                  <span class="rni-time">11:20</span>
+                </div>
+              </div>
+            </a>
+            <a href="news-detail.html" class="related-news-item">
+              <div class="rni-indicator" style="background:var(--negative);"></div>
+              <div class="rni-content">
+                <div class="rni-title">외국인, 삼성전자 1,200만주 순매도… 수급 악화</div>
+                <div class="rni-meta">
+                  <span class="rni-score" style="color:var(--negative);">악재 61</span>
+                  <span class="rni-time">10:55</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

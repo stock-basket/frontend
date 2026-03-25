@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>삼성전자 상세 분석 — 주식 바구니</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Stock Detail Specific ── */
+    .stock-hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 32px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .stock-hero-left { display: flex; align-items: center; gap: 20px; }
+    .stock-avatar {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #1d2d50, #2a3f6f);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      border: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+    .stock-hero-info h1 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+    .stock-hero-info .stock-meta {
+      display: flex; align-items: center; gap: 10px; margin-top: 4px;
+    }
+    .stock-ticker {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--text-muted);
+      background: var(--card); padding: 2px 8px;
+      border-radius: 4px; border: 1px solid var(--border);
+    }
+    .stock-market { font-size: 12px; color: var(--text-muted); }
+    .stock-hero-price { text-align: right; }
+    .price-main {
+      font-family: 'DM Mono', monospace;
+      font-size: 28px; font-weight: 500; color: var(--text-primary);
+    }
+    .price-change {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px; margin-top: 2px;
+    }
+    .price-change.up { color: var(--positive); }
+    .price-change.down { color: var(--negative); }
+    .price-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Tabs ── */
+    .detail-tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 0 32px;
+    }
+    .detail-tab {
+      padding: 14px 20px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .detail-tab:hover { color: var(--text-primary); }
+    .detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── Content Grid ── */
+    .detail-body {
+      padding: 28px 32px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .stat-value { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--text-primary); }
+    .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── AI 분석 요약 박스 ── */
+    .ai-summary-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ai-summary-box::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(180deg, var(--accent), #6366f1);
+    }
+    .ai-summary-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .ai-badge {
+      background: var(--accent-bg); color: var(--accent);
+      border: 1px solid rgba(129,140,248,.25);
+      border-radius: 4px; padding: 2px 8px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .ai-summary-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .ai-summary-text { font-size: 13px; line-height: 1.8; color: var(--text-secondary); }
+    .ai-summary-text strong { color: var(--text-primary); }
+    .ai-verdict {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .verdict-label { font-size: 11px; color: var(--text-muted); }
+    .verdict-score {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px; font-weight: 500;
+    }
+    .verdict-bar {
+      flex: 1; height: 6px; background: var(--border);
+      border-radius: 3px; overflow: hidden;
+    }
+    .verdict-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--negative), var(--neutral), var(--positive));
+      width: 100%;
+    }
+    .verdict-marker {
+      display: flex; justify-content: flex-end;
+    }
+
+    /* ── News Timeline ── */
+    .section-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-title .count-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--text-muted);
+      background: var(--card); padding: 2px 8px;
+      border-radius: 10px; border: 1px solid var(--border);
+    }
+
+    .news-timeline { display: flex; flex-direction: column; gap: 12px; }
+
+    .timeline-news-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex; gap: 14px;
+      transition: border-color .2s, background .2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .timeline-news-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    }
+    .timeline-news-card.positive::before { background: var(--positive); }
+    .timeline-news-card.negative::before { background: var(--negative); }
+    .timeline-news-card.neutral::before { background: var(--neutral); }
+    .timeline-news-card:hover { background: var(--card-hover); border-color: var(--border-light); }
+
+    .timeline-score-col {
+      width: 50px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .score-circle {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px; font-weight: 500;
+      border: 2px solid;
+    }
+    .score-circle.positive { border-color: var(--positive); color: var(--positive); background: var(--positive-bg); }
+    .score-circle.negative { border-color: var(--negative); color: var(--negative); background: var(--negative-bg); }
+    .score-circle.neutral { border-color: var(--neutral); color: var(--neutral); background: var(--neutral-bg); }
+    .score-type { font-size: 9px; color: var(--text-muted); text-align: center; }
+
+    .timeline-news-content { flex: 1; min-width: 0; }
+    .timeline-news-title {
+      font-size: 13px; font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.5; margin-bottom: 6px;
+    }
+    .timeline-news-meta {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .timeline-news-meta .source { font-size: 11px; color: var(--text-muted); }
+    .timeline-news-meta .time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+    .timeline-news-ai {
+      margin-top: 8px; padding: 8px 10px;
+      background: var(--surface); border-radius: 6px;
+      font-size: 11px; color: var(--text-secondary); line-height: 1.6;
+    }
+    .timeline-news-ai::before { content: '🤖 '; }
+
+    /* ── Right Sidebar ── */
+    .detail-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .sidebar-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .sidebar-card-title {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted); letter-spacing: 0.5px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* ── Sentiment Donut ── */
+    .sentiment-donut-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .donut-svg { width: 100px; height: 100px; }
+    .donut-center { font-family: 'DM Mono', monospace; }
+    .sentiment-legend { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .legend-item {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .legend-left { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .legend-name { font-size: 12px; color: var(--text-secondary); }
+    .legend-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* ── Impact Trend ── */
+    .trend-bars { display: flex; flex-direction: column; gap: 8px; }
+    .trend-day {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .trend-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); width: 36px; }
+    .trend-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; position: relative; }
+    .trend-bar-pos { position: absolute; left: 50%; top: 0; height: 100%; background: var(--positive); border-radius: 0 4px 4px 0; }
+    .trend-bar-neg { position: absolute; right: 50%; top: 0; height: 100%; background: var(--negative); border-radius: 4px 0 0 4px; }
+    .trend-center { position: absolute; left: 50%; top: 0; width: 1px; height: 100%; background: var(--border-light); }
+
+    /* ── Related stocks ── */
+    .related-stock {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .related-stock:last-child { border-bottom: none; }
+    .related-left { display: flex; align-items: center; gap: 10px; }
+    .related-icon { font-size: 16px; }
+    .related-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+    .related-type { font-size: 10px; color: var(--text-muted); }
+    .related-change { font-family: 'DM Mono', monospace; font-size: 12px; }
+    .related-change.up { color: var(--positive); }
+    .related-change.down { color: var(--negative); }
+
+    /* ── Alert schedule ── */
+    .alert-rows { display: flex; flex-direction: column; gap: 10px; }
+    .alert-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .alert-row-left { display: flex; align-items: center; gap: 8px; }
+    .alert-icon-sm { font-size: 13px; }
+    .alert-label { font-size: 12px; color: var(--text-secondary); }
+    .toggle {
+      width: 36px; height: 20px; border-radius: 10px;
+      background: var(--accent); position: relative; cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle.off { background: var(--border-light); }
+    .toggle::after {
+      content: '';
+      position: absolute; top: 3px; left: 3px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: white; transition: left .2s;
+    }
+    .toggle.off::after { left: 19px; }
+
+    /* ── Page header ── */
+    .page-header-bar {
+      padding: 20px 32px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-muted);
+      cursor: pointer; transition: color .2s;
+    }
+    .back-btn:hover { color: var(--text-primary); }
+    .breadcrumb-sep { color: var(--border-light); }
+    .breadcrumb-current { font-size: 12px; color: var(--text-primary); }
+
+    /* ── Urgency banner ── */
+    .urgency-banner {
+      margin: 0 32px 20px;
+      background: rgba(248,113,113,.08);
+      border: 1px solid var(--negative-border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .urgency-icon { font-size: 16px; }
+    .urgency-text { font-size: 12px; color: var(--text-secondary); flex: 1; }
+    .urgency-text strong { color: var(--negative); }
+    .urgency-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+    /* ── Chart placeholder ── */
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+    }
+    .chart-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .chart-filters { display: flex; gap: 4px; }
+    .chart-filter {
+      padding: 4px 10px; border-radius: 4px;
+      font-size: 11px; cursor: pointer;
+      color: var(--text-muted); border: 1px solid transparent;
+      transition: all .15s;
+    }
+    .chart-filter.active {
+      background: var(--accent-bg); color: var(--accent);
+      border-color: rgba(129,140,248,.25);
+    }
+    .chart-filter:hover { color: var(--text-primary); }
+    .chart-area {
+      height: 180px; position: relative;
+      display: flex; align-items: flex-end;
+    }
+    .chart-svg { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📊</div>
+      <div>
+        <div class="logo-text">주식 바구니</div>
+        <div class="logo-sub" style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;">AI NEWS BASKET</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" style="padding:12px 0;flex:1;">
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⚡</span> 대시보드</a>
+      <a href="stocks.html" class="nav-item active"><span class="nav-icon">📁</span> 내 바구니</a>
+      <a href="news.html" class="nav-item"><span class="nav-icon">📰</span> 뉴스 피드</a>
+      <div style="height:1px;background:var(--border);margin:10px 16px;"></div>
+      <div style="padding:8px 20px;font-size:10px;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;">분석 도구</div>
+      <a href="#" class="nav-item"><span class="nav-icon">📈</span> 수익률 분석</a>
+      <a href="#" class="nav-item"><span class="nav-icon">🔔</span> 알림 설정</a>
+      <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> 설정</a>
+    </nav>
+    <div class="sidebar-bottom" style="padding:16px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6366f1);display:flex;align-items:center;justify-content:center;font-size:13px;">👤</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);">김주식</div>
+          <div style="font-size:10px;color:var(--text-muted);">PRO 플랜</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <!-- Back nav -->
+    <div class="page-header-bar">
+      <a href="stocks.html" class="back-btn">← 내 바구니</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">삼성전자 상세 분석</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="stock-hero" style="margin-top:16px;">
+      <div class="stock-hero-left">
+        <div class="stock-avatar">📱</div>
+        <div class="stock-hero-info">
+          <h1>삼성전자</h1>
+          <div class="stock-meta">
+            <span class="stock-ticker">005930</span>
+            <span class="stock-market">KOSPI</span>
+            <span class="chip chip-negative" style="font-size:10px;padding:2px 8px;">📉 악재 우세</span>
+          </div>
+        </div>
+      </div>
+      <div class="stock-hero-price">
+        <div class="price-main">₩72,400</div>
+        <div class="price-change down">▼ 1,200 (−1.63%)</div>
+        <div class="price-time">2025.03.18 15:30 기준</div>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+          <button class="btn btn-ghost btn-sm" onclick="alert('바구니에서 제거되었습니다.')">바구니 제거</button>
+          <button class="btn btn-primary btn-sm">🔔 알림 설정</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgency banner -->
+    <div class="urgency-banner">
+      <span class="urgency-icon">⚠️</span>
+      <div class="urgency-text">
+        <strong>급락 감지</strong> — 오늘 HBM 생산 차질 관련 악재 뉴스 3건 집중 발생. AI가 주가 하락 원인으로 분석 중입니다.
+      </div>
+      <span class="urgency-time">14:22</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="detail-tabs">
+      <div class="detail-tab active" onclick="switchTab(this)">📰 뉴스 분석</div>
+      <div class="detail-tab" onclick="switchTab(this)">📈 가격 차트</div>
+      <div class="detail-tab" onclick="switchTab(this)">🏢 기업 정보</div>
+      <div class="detail-tab" onclick="switchTab(this)">⚡ 급등락 기록</div>
+    </div>
+
+    <!-- Body -->
+    <div class="detail-body">
+
+      <!-- Left main -->
+      <div>
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">오늘 뉴스</div>
+            <div class="stat-value" style="color:var(--text-primary);">18건</div>
+            <div class="stat-sub">↑ 어제보다 +7건</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">호재</div>
+            <div class="stat-value" style="color:var(--positive);">5건</div>
+            <div class="stat-sub">평균 영향력 62</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">악재</div>
+            <div class="stat-value" style="color:var(--negative);">11건</div>
+            <div class="stat-sub">평균 영향력 74 ⚠️</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">AI 종합 점수</div>
+            <div class="stat-value" style="color:var(--negative);">38 / 100</div>
+            <div class="stat-sub">하향 우세</div>
+          </div>
+        </div>
+
+        <!-- AI Summary -->
+        <div class="ai-summary-box">
+          <div class="ai-summary-header">
+            <span class="ai-badge">AI 분석</span>
+            <span class="ai-summary-title">오늘의 삼성전자 종합 판단</span>
+          </div>
+          <div class="ai-summary-text">
+            오늘 삼성전자 관련 뉴스에서 <strong>HBM3E 수율 문제</strong>와 <strong>엔비디아 납품 지연</strong> 이슈가 반복적으로 언급되며 부정적 센티먼트가 우세합니다.
+            특히 오후 2시경 외신에서 발화한 "HBM 생산 차질" 보도가 주가 급락의 직접적 트리거로 분석됩니다.
+            다만 <strong>미국 AI 설비투자 확대</strong>에 따른 반도체 수요 기대감이 호재로 작용 중이며,
+            낙폭이 과대하다는 일부 긍정적 분석도 나오고 있습니다.
+          </div>
+          <div class="ai-verdict">
+            <span class="verdict-label">악재 강도</span>
+            <div class="verdict-bar">
+              <div class="verdict-fill"></div>
+            </div>
+            <!-- marker position 38% (악재쪽) -->
+            <span class="verdict-score" style="color:var(--negative);">38 / 100</span>
+          </div>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">📈 가격 + 뉴스 영향력 오버레이</div>
+            <div class="chart-filters">
+              <div class="chart-filter active">1일</div>
+              <div class="chart-filter">1주</div>
+              <div class="chart-filter">1달</div>
+              <div class="chart-filter">3달</div>
+            </div>
+          </div>
+          <div class="chart-area">
+            <svg class="chart-svg" viewBox="0 0 600 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f87171" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="0" y1="40" x2="600" y2="40" stroke="#2a2e45" stroke-width="1"/>
+              <line x1="0" y1="80" x2="600" y2="80" stroke="#2a2e45" stroke-width="1"/>
+              <line x1="0" y1="120" x2="600" y2="120" stroke="#2a2e45" stroke-width="1"/>
+              <!-- Area fill -->
+              <path d="M0,50 L60,48 L120,45 L180,60 L240,55 L300,70 L360,90 L420,95 L480,110 L540,120 L600,130 L600,160 L0,160 Z"
+                    fill="url(#priceGrad)" opacity="0.6"/>
+              <!-- Price line -->
+              <path d="M0,50 L60,48 L120,45 L180,60 L240,55 L300,70 L360,90 L420,95 L480,110 L540,120 L600,130"
+                    fill="none" stroke="#f87171" stroke-width="2" stroke-linejoin="round"/>
+              <!-- News event markers -->
+              <circle cx="300" cy="70" r="5" fill="#fbbf24" opacity="0.8"/>
+              <line x1="300" y1="75" x2="300" y2="145" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+              <text x="295" y="155" font-size="9" fill="#fbbf24" text-anchor="middle">뉴스1</text>
+              <circle cx="420" cy="95" r="5" fill="#f87171" opacity="0.8"/>
+              <line x1="420" y1="100" x2="420" y2="145" stroke="#f87171" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+              <text x="415" y="155" font-size="9" fill="#f87171" text-anchor="middle">급락</text>
+              <!-- Y labels -->
+              <text x="8" y="44" font-size="9" fill="#555d7a">73,800</text>
+              <text x="8" y="84" font-size="9" fill="#555d7a">72,800</text>
+              <text x="8" y="124" font-size="9" fill="#555d7a">71,600</text>
+              <!-- X labels -->
+              <text x="20" y="160" font-size="9" fill="#555d7a">09:00</text>
+              <text x="140" y="160" font-size="9" fill="#555d7a">11:00</text>
+              <text x="260" y="160" font-size="9" fill="#555d7a">13:00</text>
+              <text x="380" y="160" font-size="9" fill="#555d7a">14:22</text>
+              <text x="520" y="160" font-size="9" fill="#555d7a">15:30</text>
+            </svg>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">
+              <div style="width:16px;height:2px;background:var(--negative);"></div> 주가
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--negative);"></div> 악재 이벤트
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--neutral);"></div> 중립 이벤트
+            </div>
+          </div>
+        </div>
+
+        <!-- News timeline -->
+        <div class="section-title">
+          오늘의 뉴스 타임라인
+          <span class="count-badge">18건</span>
+        </div>
+
+        <!-- Filter pills -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="chip chip-accent" style="cursor:pointer;font-size:11px;" onclick="filterNews(this,'all')">전체 18</button>
+          <button class="chip chip-positive" style="cursor:pointer;font-size:11px;" onclick="filterNews(this,'positive')">호재 5</button>
+          <button class="chip chip-negative" style="cursor:pointer;font-size:11px;" onclick="filterNews(this,'negative')">악재 11</button>
+          <button class="chip chip-neutral" style="cursor:pointer;font-size:11px;" onclick="filterNews(this,'neutral')">중립 2</button>
+        </div>
+
+        <div class="news-timeline" id="newsTimeline">
+
+          <!-- News 1 - negative high impact -->
+          <a href="news-detail.html" class="timeline-news-card negative">
+            <div class="timeline-score-col">
+              <div class="score-circle negative">87</div>
+              <div class="score-type">악재</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">삼성전자 HBM3E 엔비디아 납품 또 지연… "수율 개선 난항"</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-negative" style="font-size:10px;padding:1px 6px;">⚠️ 고영향</span>
+                <span class="chip" style="font-size:10px;padding:1px 6px;background:rgba(248,113,113,.05);color:#f87171;border:1px solid rgba(248,113,113,.2);">⚡ 급락 트리거</span>
+                <span class="source">한국경제</span>
+                <span class="time">14:18</span>
+              </div>
+              <div class="timeline-news-ai">HBM3E 납품 지연은 단기 실적에 직접적 영향. 엔비디아 공급망 이탈 시 연간 매출 ~4.2조 리스크. 주가 즉각 반응 예상.</div>
+            </div>
+          </a>
+
+          <!-- News 2 - negative -->
+          <a href="news-detail.html" class="timeline-news-card negative">
+            <div class="timeline-score-col">
+              <div class="score-circle negative">73</div>
+              <div class="score-type">악재</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">메모리 반도체 ASP, 4분기 연속 하락 전망… HBM 외 D램 전반 부진</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-negative" style="font-size:10px;padding:1px 6px;">고영향</span>
+                <span class="source">전자신문</span>
+                <span class="time">13:45</span>
+              </div>
+              <div class="timeline-news-ai">D램 단가 하락이 지속되면 삼성전자 메모리 사업부 마진 압박 심화. 2분기 어닝쇼크 가능성 제기.</div>
+            </div>
+          </a>
+
+          <!-- News 3 - positive -->
+          <a href="news-detail.html" class="timeline-news-card positive">
+            <div class="timeline-score-col">
+              <div class="score-circle positive">68</div>
+              <div class="score-type">호재</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">美 AI 데이터센터 투자 급증 "2030년까지 1,500조 시장"… 삼성 수혜 기대</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-positive" style="font-size:10px;padding:1px 6px;">중영향</span>
+                <span class="source">블룸버그</span>
+                <span class="time">11:20</span>
+              </div>
+              <div class="timeline-news-ai">AI 인프라 수요 증가는 HBM·서버 D램 장기 수혜 요인. 단기 공급 이슈와 무관하게 중장기 포지티브.</div>
+            </div>
+          </a>
+
+          <!-- News 4 - negative -->
+          <a href="news-detail.html" class="timeline-news-card negative">
+            <div class="timeline-score-col">
+              <div class="score-circle negative">61</div>
+              <div class="score-type">악재</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">외국인 삼성전자 1,200만주 순매도… 반도체 ETF도 동반 하락</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-negative" style="font-size:10px;padding:1px 6px;">중영향</span>
+                <span class="source">머니투데이</span>
+                <span class="time">10:55</span>
+              </div>
+              <div class="timeline-news-ai">외국인 대량 순매도는 수급 악화 신호. 코스피 전반적 약세와 겹쳐 하방 압력 가중.</div>
+            </div>
+          </a>
+
+          <!-- News 5 - neutral -->
+          <a href="news-detail.html" class="timeline-news-card neutral">
+            <div class="timeline-score-col">
+              <div class="score-circle neutral">44</div>
+              <div class="score-type">중립</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">삼성전자, 내달 주주총회 일정 공개 — 배당 정책 유지 예정</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-neutral" style="font-size:10px;padding:1px 6px;">저영향</span>
+                <span class="source">뉴스1</span>
+                <span class="time">09:30</span>
+              </div>
+              <div class="timeline-news-ai">배당 정책 유지는 시장 예상에 부합. 단독으로는 주가 변동 트리거 아님.</div>
+            </div>
+          </a>
+
+          <!-- News 6 - positive -->
+          <a href="news-detail.html" class="timeline-news-card positive">
+            <div class="timeline-score-col">
+              <div class="score-circle positive">55</div>
+              <div class="score-type">호재</div>
+            </div>
+            <div class="timeline-news-content">
+              <div class="timeline-news-title">이재용 회장, 미국 빅테크 CEO 연쇄 회동… 공급망 협력 강화 논의</div>
+              <div class="timeline-news-meta">
+                <span class="chip chip-positive" style="font-size:10px;padding:1px 6px;">중영향</span>
+                <span class="source">조선비즈</span>
+                <span class="time">09:10</span>
+              </div>
+              <div class="timeline-news-ai">빅테크 파트너십 강화는 파운드리·HBM 공급 관계 개선 기대. 실질 계약으로 이어질 경우 호재 강도 상승 예상.</div>
+            </div>
+          </a>
+
+        </div>
+
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn btn-ghost btn-sm">뉴스 더 보기 (12건)</button>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="detail-sidebar">
+
+        <!-- Sentiment donut -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">오늘 뉴스 분포</div>
+          <div class="sentiment-donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <!-- Bad: 61% -->
+              <circle cx="50" cy="50" r="38" fill="transparent" stroke="#f87171" stroke-width="16"
+                stroke-dasharray="146 238" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+              <!-- Good: 28% -->
+              <circle cx="50" cy="50" r="38" fill="transparent" stroke="#34d399" stroke-width="16"
+                stroke-dasharray="67 317" stroke-dashoffset="-146" transform="rotate(-90 50 50)"/>
+              <!-- Neutral: 11% -->
+              <circle cx="50" cy="50" r="38" fill="transparent" stroke="#fbbf24" stroke-width="16"
+                stroke-dasharray="26 358" stroke-dashoffset="-213" transform="rotate(-90 50 50)"/>
+              <!-- Center text -->
+              <text x="50" y="46" text-anchor="middle" fill="#f87171" font-size="14" font-weight="600" font-family="'DM Mono',monospace">61%</text>
+              <text x="50" y="58" text-anchor="middle" fill="#8890ae" font-size="8">악재 우세</text>
+            </svg>
+            <div class="sentiment-legend">
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background:var(--negative)"></div>
+                  <div class="legend-name">악재</div>
+                </div>
+                <div class="legend-val">11건 (61%)</div>
+              </div>
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background:var(--positive)"></div>
+                  <div class="legend-name">호재</div>
+                </div>
+                <div class="legend-val">5건 (28%)</div>
+              </div>
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background:var(--neutral)"></div>
+                  <div class="legend-name">중립</div>
+                </div>
+                <div class="legend-val">2건 (11%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7-day sentiment trend -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">7일 센티먼트 추이</div>
+          <div class="trend-bars">
+            <div class="trend-day">
+              <div class="trend-date">3/12</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:35%;"></div>
+                <div class="trend-bar-neg" style="width:20%;"></div>
+              </div>
+            </div>
+            <div class="trend-day">
+              <div class="trend-date">3/13</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:42%;"></div>
+                <div class="trend-bar-neg" style="width:15%;"></div>
+              </div>
+            </div>
+            <div class="trend-day">
+              <div class="trend-date">3/14</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:22%;"></div>
+                <div class="trend-bar-neg" style="width:38%;"></div>
+              </div>
+            </div>
+            <div class="trend-day">
+              <div class="trend-date">3/15</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:30%;"></div>
+                <div class="trend-bar-neg" style="width:28%;"></div>
+              </div>
+            </div>
+            <div class="trend-day">
+              <div class="trend-date">3/16</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:18%;"></div>
+                <div class="trend-bar-neg" style="width:44%;"></div>
+              </div>
+            </div>
+            <div class="trend-day">
+              <div class="trend-date">3/17</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:25%;"></div>
+                <div class="trend-bar-neg" style="width:35%;"></div>
+              </div>
+            </div>
+            <div class="trend-day" style="background:rgba(129,140,248,.05);border-radius:4px;padding:0 4px;">
+              <div class="trend-date" style="color:var(--accent);">오늘</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-center"></div>
+                <div class="trend-bar-pos" style="width:14%;"></div>
+                <div class="trend-bar-neg" style="width:48%;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text-muted);">
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:6px;background:var(--positive);border-radius:2px;"></div>호재</div>
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:6px;background:var(--negative);border-radius:2px;"></div>악재</div>
+          </div>
+        </div>
+
+        <!-- Alert settings -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">알림 설정</div>
+          <div class="alert-rows">
+            <div class="alert-row">
+              <div class="alert-row-left">
+                <span class="alert-icon-sm">📉</span>
+                <span class="alert-label">급락 감지 알림</span>
+              </div>
+              <div class="toggle"></div>
+            </div>
+            <div class="alert-row">
+              <div class="alert-row-left">
+                <span class="alert-icon-sm">🔴</span>
+                <span class="alert-label">고영향 악재 뉴스</span>
+              </div>
+              <div class="toggle"></div>
+            </div>
+            <div class="alert-row">
+              <div class="alert-row-left">
+                <span class="alert-icon-sm">🟢</span>
+                <span class="alert-label">고영향 호재 뉴스</span>
+              </div>
+              <div class="toggle off"></div>
+            </div>
+            <div class="alert-row">
+              <div class="alert-row-left">
+                <span class="alert-icon-sm">📊</span>
+                <span class="alert-label">일일 요약 리포트</span>
+              </div>
+              <div class="toggle off"></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">크롤링 주기</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="chip chip-accent" style="font-size:11px;cursor:pointer;">매 2시간</button>
+              <button class="chip" style="font-size:11px;cursor:pointer;background:var(--card);">매 4시간</button>
+              <button class="chip" style="font-size:11px;cursor:pointer;background:var(--card);">1일 1회</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Related stocks -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">연관 종목 동향</div>
+          <div>
+            <div class="related-stock">
+              <div class="related-left">
+                <span class="related-icon">💾</span>
+                <div>
+                  <div class="related-name">SK하이닉스</div>
+                  <div class="related-type">HBM 경쟁사</div>
+                </div>
+              </div>
+              <div class="related-change up">+0.82%</div>
+            </div>
+            <div class="related-stock">
+              <div class="related-left">
+                <span class="related-icon">⚙️</span>
+                <div>
+                  <div class="related-name">삼성SDI</div>
+                  <div class="related-type">계열사</div>
+                </div>
+              </div>
+              <div class="related-change down">−0.45%</div>
+            </div>
+            <div class="related-stock">
+              <div class="related-left">
+                <span class="related-icon">🖥️</span>
+                <div>
+                  <div class="related-name">NVIDIA</div>
+                  <div class="related-type">주요 고객사</div>
+                </div>
+              </div>
+              <div class="related-change up">+2.31%</div>
+            </div>
+            <div class="related-stock">
+              <div class="related-left">
+                <span class="related-icon">📱</span>
+                <div>
+                  <div class="related-name">LG이노텍</div>
+                  <div class="related-type">부품 협력사</div>
+                </div>
+              </div>
+              <div class="related-change down">−1.12%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function switchTab(el) {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function filterNews(el, type) {
+    document.querySelectorAll('.chip[onclick]').forEach(c => {
+      c.style.fontWeight = '400';
+      c.style.opacity = '0.7';
+    });
+    el.style.fontWeight = '600';
+    el.style.opacity = '1';
+    const cards = document.querySelectorAll('.timeline-news-card');
+    cards.forEach(card => {
+      if (type === 'all') { card.style.display = 'flex'; return; }
+      card.style.display = card.classList.contains(type) ? 'flex' : 'none';
+    });
+  }
+
+  // Toggle switches
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('off'));
+  });
+
+  // Chart filter
+  document.querySelectorAll('.chart-filter').forEach(f => {
+    f.addEventListener('click', () => {
+      document.querySelectorAll('.chart-filter').forEach(x => x.classList.remove('active'));
+      f.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
