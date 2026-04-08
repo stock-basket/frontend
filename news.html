@@ -64,6 +64,8 @@ a{text-decoration:none;color:inherit;}
 .f-tab.bad.active{background:var(--negative-bg);color:var(--negative);border-color:var(--negative-border);}
 .f-tab.urgent.active{background:rgba(248,113,113,0.15);color:var(--negative);border-color:var(--negative);}
 
+.theme-btn{width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card);color:var(--text-primary);}
 .sort-select{padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;cursor:pointer;margin-left:auto;}
 
 /* Stock filter pills */
@@ -168,13 +170,12 @@ a{text-decoration:none;color:inherit;}
   <div class="sidebar-logo"><div class="logo-icon">🧺</div><div><div class="logo-text">주식 바구니</div><div class="logo-sub">AI INTEL</div></div></div>
   <nav class="sidebar-nav">
     <div class="nav-section">메뉴</div>
-    <a href="dashboard.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">📊</span> 대시보드</a>
     <a href="news.html" class="nav-item active"><span style="font-size:14px;width:20px;text-align:center">📰</span> 뉴스 피드<span class="nav-badge">3</span></a>
     <a href="stocks.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🧺</span> 내 바구니</a>
     <a href="stock-detail.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔍</span> 종목 분석</a>
     <div class="nav-section">설정</div>
-    <a href="#" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
-    <a href="#" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
+    <a href="settings.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
+    <a href="settings.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
     <a href="index.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🏠</span> 홈으로</a>
   </nav>
   <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">홍</div><div><div class="user-name">홍길동</div><div class="user-plan">PRO PLAN</div></div><span style="margin-left:auto;color:var(--text-muted);font-size:14px;">⋯</span></div></div>
@@ -184,8 +185,9 @@ a{text-decoration:none;color:inherit;}
   <div class="topbar">
     <div><div class="topbar-title">뉴스 피드</div><div class="topbar-sub">오후 2:30 기준 · 42건 분석 완료</div></div>
     <div class="topbar-right">
-      <button class="btn btn-ghost">🔔 알림 설정</button>
+      <button class="btn btn-ghost" onclick="location.href='settings.html'">🔔 알림 설정</button>
       <button class="btn btn-primary" onclick="alert('새로고침! 실제 서비스에서는 최신 뉴스를 크롤링합니다.')">↺ 새로고침</button>
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="테마 전환">🌙</button>
     </div>
   </div>
 
@@ -436,11 +438,7 @@ a{text-decoration:none;color:inherit;}
 
       <!-- RIGHT COL -->
       <div class="right-col">
-
-        <!-- KEYWORD CLOUD -->
-        <div class="widget">
-          <div class="widget-title">🔤 오늘 핵심 키워드</div>
-          <div class="keyword-cloud">
+<div class="keyword-cloud">
             <span class="kw big" style="color:var(--positive)">HBM</span>
             <span class="kw big" style="color:var(--negative)">금감원</span>
             <span class="kw big">엔비디아</span>
@@ -519,6 +517,11 @@ function togglePill(el) {
   document.querySelectorAll('.stock-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
 }
+</script>
+<script>
+function applyTheme(t){const r=document.documentElement;if(t==='light'){r.classList.add('theme-light');r.classList.remove('theme-dark');r.setAttribute('data-theme','light');const b=document.getElementById('themeBtn');if(b)b.textContent='☀️';}else{r.classList.remove('theme-light');r.classList.add('theme-dark');r.setAttribute('data-theme','dark');const b=document.getElementById('themeBtn');if(b)b.textContent='🌙';}localStorage.setItem('theme',t);}
+function toggleTheme(){const c=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');applyTheme(c==='dark'?'light':'dark');}
+(function(){const s=localStorage.getItem('theme');if(s)applyTheme(s);else if(window.matchMedia('(prefers-color-scheme: light)').matches)applyTheme('light');})();
 </script>
 </body>
 </html>
