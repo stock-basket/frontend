@@ -5,19 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>뉴스 피드 — 주식 바구니</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-:root {
-  --bg: #10121a; --surface: #181b27; --card: #1e2235; --card-hover: #242840;
-  --border: #2a2e45; --border-light: #333750;
-  --text-primary: #e4e7f2; --text-secondary: #8890ae; --text-muted: #555d7a;
-  --positive: #34d399; --positive-bg: rgba(52,211,153,0.08); --positive-border: rgba(52,211,153,0.2);
-  --negative: #f87171; --negative-bg: rgba(248,113,113,0.08); --negative-border: rgba(248,113,113,0.2);
-  --neutral: #fbbf24; --neutral-bg: rgba(251,191,36,0.08); --neutral-border: rgba(251,191,36,0.2);
-  --accent: #818cf8; --accent-bg: rgba(129,140,248,0.1);
-  --sidebar-w: 240px;
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;}
 a{text-decoration:none;color:inherit;}
 ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
@@ -144,7 +134,8 @@ a{text-decoration:none;color:inherit;}
 
 /* ── RIGHT SIDE ── */
 .right-col{display:flex;flex-direction:column;gap:14px;}
-.widget{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.right-top {display:flex;flex-direction: column;gap:14px;}
+.widget{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;max-height: 300px; overflow-y: auto;}
 .widget-title{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;}
 
 /* Keyword cloud */
@@ -175,7 +166,7 @@ a{text-decoration:none;color:inherit;}
     <a href="stock-detail.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔍</span> 종목 분석</a>
     <div class="nav-section">설정</div>
     <a href="settings.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
-    <a href="settings.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
+    <a href="account.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
     <a href="index.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🏠</span> 홈으로</a>
   </nav>
   <div class="sidebar-bottom"><div class="user-card"><div class="user-avatar">홍</div><div><div class="user-name">홍길동</div><div class="user-plan">PRO PLAN</div></div><span style="margin-left:auto;color:var(--text-muted);font-size:14px;">⋯</span></div></div>
@@ -435,25 +426,8 @@ a{text-decoration:none;color:inherit;}
         </div>
 
       </div>
-
-      <!-- RIGHT COL -->
       <div class="right-col">
-<div class="keyword-cloud">
-            <span class="kw big" style="color:var(--positive)">HBM</span>
-            <span class="kw big" style="color:var(--negative)">금감원</span>
-            <span class="kw big">엔비디아</span>
-            <span class="kw medium" style="color:var(--positive)">계약</span>
-            <span class="kw medium">목표주가</span>
-            <span class="kw medium" style="color:var(--negative)">조사</span>
-            <span class="kw">전기차</span>
-            <span class="kw">보조금</span>
-            <span class="kw">실적</span>
-            <span class="kw" style="color:var(--negative)">블록딜</span>
-            <span class="kw">파운드리</span>
-            <span class="kw">AI반도체</span>
-          </div>
-        </div>
-
+        <div class="right-top">
         <!-- TODAY TIMELINE -->
         <div class="widget">
           <div class="widget-title">⏱ 오늘 타임라인</div>
@@ -490,7 +464,6 @@ a{text-decoration:none;color:inherit;}
             </div>
           </div>
         </div>
-
         <!-- AI SUMMARY -->
         <div class="widget" style="background:linear-gradient(135deg,rgba(129,140,248,0.08),var(--card));border-color:rgba(129,140,248,0.25);">
           <div class="widget-title" style="color:var(--accent);">🤖 AI 종합 판단</div>
@@ -501,6 +474,9 @@ a{text-decoration:none;color:inherit;}
             <strong style="color:var(--neutral)">NAVER·현대차</strong>는 중립 신호로 관망 적절.
           </div>
         </div>
+      </div>
+    </div>
+        
 
       </div>
     </div>

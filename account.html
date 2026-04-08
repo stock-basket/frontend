@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>설정 — 주식 바구니</title>
+<title>계정 설정 — 주식 바구니</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -34,14 +34,6 @@
 
 .body { padding: 28px 40px; max-width: 900px; }
 
-/* Settings tabs */
-.settings-tabs { display: flex; gap: 3px; margin-bottom: 24px; }
-.settings-tab { padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-secondary); border: 1px solid var(--border); background: var(--surface); transition: all 0.15s; }
-.settings-tab.active { background: var(--accent-bg); color: var(--accent); border-color: rgba(129,140,248,0.3); }
-
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
 /* Setting sections */
 .setting-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
 .setting-section-title { font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); padding: 14px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -50,28 +42,20 @@
 .setting-label { display: flex; flex-direction: column; gap: 3px; }
 .setting-label-main { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
 .setting-label-sub { font-size: 11.5px; color: var(--text-muted); }
-.toggle { width: 38px; height: 21px; background: var(--border-light); border-radius: 20px; position: relative; transition: background 0.2s; flex-shrink: 0; cursor: pointer; border: none; }
-.toggle::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-.toggle.on { background: var(--accent); }
-.toggle.on::after { transform: translateX(17px); }
 
-/* Theme selector */
-.theme-options { display: flex; gap: 8px; }
-.theme-opt { padding: 7px 16px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); transition: all 0.15s; }
-.theme-opt.active { background: var(--accent-bg); color: var(--accent); border-color: rgba(129,140,248,0.3); }
-.theme-opt:hover:not(.active) { background: var(--card); color: var(--text-primary); }
+/* Plan badge */
+.plan-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.plan-free { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
+.plan-pro { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(129,140,248,0.3); }
 
-/* Input in setting */
+/* Danger zone */
+.danger-zone { background: var(--negative-bg); border: 1px solid var(--negative-border); border-radius: 10px; padding: 18px; margin-top: 24px; }
+.danger-title { font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; color: var(--negative); margin-bottom: 10px; }
+.danger-desc { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.6; }
+
+/* Input */
 .setting-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; color: var(--text-primary); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; padding: 8px 12px; outline: none; transition: all 0.15s; min-width: 180px; }
 .setting-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
-
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--card); color: var(--text-primary); }
-.btn-danger { background: transparent; color: var(--negative); border: 1px solid var(--negative-border); }
-.btn-danger:hover { background: var(--negative-bg); }
 </style>
 </head>
 <body>
@@ -87,8 +71,8 @@
     <a href="stocks.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🧺</span> 내 바구니</a>
     <a href="stock-detail.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔍</span> 종목 분석</a>
     <div class="nav-section">설정</div>
-    <a href="settings.html" class="nav-item active"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
-    <a href="account.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
+    <a href="settings.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🔔</span> 알림 설정</a>
+    <a href="account.html" class="nav-item active"><span style="font-size:14px;width:20px;text-align:center">⚙️</span> 계정 설정</a>
     <a href="index.html" class="nav-item"><span style="font-size:14px;width:20px;text-align:center">🏠</span> 홈으로</a>
   </nav>
   <div class="sidebar-bottom">
@@ -102,7 +86,7 @@
 
 <div class="main">
   <div class="topbar">
-    <div><div class="topbar-title">알림 설정</div><div class="topbar-sub">알림 방식 및 임계값 설정</div></div>
+    <div><div class="topbar-title">계정 설정</div><div class="topbar-sub">프로필 · 보안 · 플랜</div></div>
     <div class="topbar-right">
       <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="테마 전환">🌙</button>
     </div>
@@ -110,116 +94,86 @@
 
   <div class="body">
 
-    <!-- 알림 설정 -->
+    <!-- 프로필 -->
     <div class="setting-section">
-      <div class="setting-section-title">전체 알림</div>
+      <div class="setting-section-title">기본 정보</div>
       <div class="setting-item">
         <div class="setting-label">
-          <div class="setting-label-main">알림 전체 활성화</div>
-          <div class="setting-label-sub">꺼두면 모든 알림이 비활성화됩니다</div>
+          <div class="setting-label-main">닉네임</div>
+          <div class="setting-label-sub">다른 사용자에게 표시되는 이름</div>
         </div>
-        <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        <input type="text" class="setting-input" value="홍길동" />
+      </div>
+      <div class="setting-item">
+        <div class="setting-label">
+          <div class="setting-label-main">이메일</div>
+          <div class="setting-label-sub">로그인 및 알림에 사용</div>
+        </div>
+        <input type="email" class="setting-input" value="hong@example.com" />
       </div>
     </div>
 
+    <!-- 비밀번호 -->
     <div class="setting-section">
-      <div class="setting-section-title">급등락 감지</div>
+      <div class="setting-section-title">비밀번호 변경</div>
       <div class="setting-item">
         <div class="setting-label">
-          <div class="setting-label-main">⚡ 급등락 감지 알림</div>
-          <div class="setting-label-sub">주가가 일정 % 이상 변동 시 즉시 알림</div>
+          <div class="setting-label-main">현재 비밀번호</div>
         </div>
-        <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        <input type="password" class="setting-input" placeholder="현재 비밀번호" />
       </div>
       <div class="setting-item">
         <div class="setting-label">
-          <div class="setting-label-main">감지 임계값 (%)</div>
-          <div class="setting-label-sub">이 수치 이상 변동 시 알림 발송</div>
+          <div class="setting-label-main">새 비밀번호</div>
+          <div class="setting-label-sub">8자 이상, 영문·숫자·특수문자 조합 권장</div>
         </div>
-        <input type="number" class="setting-input" value="3" min="1" max="20" style="width:100px;text-align:center;" />
+        <input type="password" class="setting-input" placeholder="새 비밀번호 (8자 이상)" />
+      </div>
+      <div class="setting-item">
+        <div class="setting-label">
+          <div class="setting-label-main">새 비밀번호 확인</div>
+        </div>
+        <input type="password" class="setting-input" placeholder="새 비밀번호 재입력" />
       </div>
     </div>
 
+    <!-- 플랜 -->
     <div class="setting-section">
-      <div class="setting-section-title">뉴스 알림</div>
+      <div class="setting-section-title">구독 플랜</div>
       <div class="setting-item">
         <div class="setting-label">
-          <div class="setting-label-main">🔴 고영향 악재 뉴스 알림</div>
-          <div class="setting-label-sub">영향력 점수 70점 이상 악재 발생 시</div>
+          <div class="setting-label-main">현재 플랜</div>
+          <div class="setting-label-sub">무료 플랜 · 뉴스 20건/일, 바구니 1개</div>
         </div>
-        <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        <span class="plan-badge plan-free">FREE</span>
       </div>
       <div class="setting-item">
         <div class="setting-label">
-          <div class="setting-label-main">🟢 고영향 호재 뉴스 알림</div>
-          <div class="setting-label-sub">영향력 점수 70점 이상 호재 발생 시</div>
+          <div class="setting-label-main">PRO 플랜으로 업그레이드</div>
+          <div class="setting-label-sub">무제한 뉴스 · 바구니 10개 · 실시간 알림 · 뉴스 상세 분석</div>
         </div>
-        <button class="toggle" onclick="this.classList.toggle('on')"></button>
-      </div>
-      <div class="setting-item">
-        <div class="setting-label">
-          <div class="setting-label-main">알림 최소 영향력 점수</div>
-          <div class="setting-label-sub">이 점수 이상의 뉴스만 알림 발송</div>
-        </div>
-        <input type="number" class="setting-input" value="70" min="0" max="100" style="width:100px;text-align:center;" />
+        <button class="btn btn-primary" onclick="alert('결제 페이지로 이동합니다.')">₩9,900/월 업그레이드</button>
       </div>
     </div>
 
-    <div class="setting-section">
-      <div class="setting-section-title">알림 방식</div>
-      <div class="setting-item">
-        <div class="setting-label">
-          <div class="setting-label-main">이메일 알림</div>
-          <div class="setting-label-sub">hong@example.com</div>
-        </div>
-        <button class="toggle on" onclick="this.classList.toggle('on')"></button>
-      </div>
-      <div class="setting-item">
-        <div class="setting-label">
-          <div class="setting-label-main">브라우저 푸시 알림</div>
-          <div class="setting-label-sub">브라우저 알림 권한 필요</div>
-        </div>
-        <button class="toggle" onclick="this.classList.toggle('on');requestPush()"></button>
-      </div>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button class="btn btn-primary" onclick="alert('계정 정보가 저장되었습니다.')">변경 사항 저장</button>
     </div>
 
-    <div class="setting-section">
-      <div class="setting-section-title">화면 설정</div>
-      <div class="setting-item">
-        <div class="setting-label">
-          <div class="setting-label-main">색상 테마</div>
-          <div class="setting-label-sub">시스템 설정을 따르거나 직접 선택하세요</div>
-        </div>
-        <div class="theme-options">
-          <div class="theme-opt" id="themeOptSystem" onclick="setThemeOpt('system',this)">🖥 시스템</div>
-          <div class="theme-opt" id="themeOptDark" onclick="setThemeOpt('dark',this)">🌙 다크</div>
-          <div class="theme-opt" id="themeOptLight" onclick="setThemeOpt('light',this)">☀️ 라이트</div>
-        </div>
+    <!-- 탈퇴 위험 구역 -->
+    <div class="danger-zone">
+      <div class="danger-title">⚠️ 위험 구역</div>
+      <div class="danger-desc">
+        계정을 탈퇴하면 바구니, 알림 설정, 뉴스 기록 등 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.
       </div>
+      <button class="btn btn-danger" onclick="if(confirm('정말 탈퇴하시겠습니까?\n모든 데이터가 영구 삭제됩니다.'))alert('탈퇴 처리되었습니다.')">계정 탈퇴</button>
     </div>
 
-    <button class="btn btn-primary" style="margin-top:6px" onclick="alert('알림 설정이 저장되었습니다.')">설정 저장</button>
   </div>
 </div>
 </div>
 
 <script>
-function requestPush() {
-  if ('Notification' in window) Notification.requestPermission();
-}
-
-function setThemeOpt(opt, el) {
-  document.querySelectorAll('.theme-opt').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
-  if (opt === 'system') {
-    localStorage.removeItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
-  } else {
-    applyTheme(opt);
-  }
-}
-
 function applyTheme(t) {
   const r = document.documentElement;
   if (t === 'light') {
@@ -232,11 +186,6 @@ function applyTheme(t) {
     document.getElementById('themeBtn').textContent = '🌙';
   }
   localStorage.setItem('theme', t);
-  // Sync theme option buttons
-  const saved = localStorage.getItem('theme');
-  document.getElementById('themeOptSystem').classList.toggle('active', !saved);
-  document.getElementById('themeOptDark').classList.toggle('active', saved === 'dark');
-  document.getElementById('themeOptLight').classList.toggle('active', saved === 'light');
 }
 function toggleTheme() {
   const c = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
