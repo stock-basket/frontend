@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-:root {
+:root.theme-light {
   --bg: #10121a;
   --surface: #181b27;
   --card: #1e2235;
@@ -87,7 +87,8 @@ nav {
   transition: background 0.15s !important;
 }
 .nav-cta:hover { background: var(--accent-hover) !important; }
-
+.theme-btn{width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.15s;}
+.theme-btn:hover{background:var(--card);color:var(--text-primary);}
 /* ── HERO ── */
 .hero {
   position: relative; z-index: 1;
@@ -419,6 +420,7 @@ footer {
     </div>
   </div>
   <div class="nav-links">
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="테마 전환">🌙</button>
     <a href="#features">기능</a>
     <a href="#how">작동 방식</a>
     <a href="login.html">로그인</a>
@@ -636,6 +638,10 @@ footer {
     <a href="#">고객센터</a>
   </div>
 </footer>
-
+<script>
+function applyTheme(t){const r=document.documentElement;if(t==='light'){r.classList.add('theme-light');r.classList.remove('theme-dark');r.setAttribute('data-theme','light');const b=document.getElementById('themeBtn');if(b)b.textContent='☀️';}else{r.classList.remove('theme-light');r.classList.add('theme-dark');r.setAttribute('data-theme','dark');const b=document.getElementById('themeBtn');if(b)b.textContent='🌙';}localStorage.setItem('theme',t);}
+function toggleTheme(){const c=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');applyTheme(c==='dark'?'light':'dark');}
+(function(){const s=localStorage.getItem('theme');if(s)applyTheme(s);else if(window.matchMedia('(prefers-color-scheme: light)').matches)applyTheme('light');})();
+</script>
 </body>
 </html>
