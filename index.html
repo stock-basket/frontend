@@ -11,15 +11,80 @@
   --bg: #10121a;
   --surface: #181b27;
   --card: #1e2235;
+  --card-hover: #242840;
   --border: #2a2e45;
+  --border-light: #333750;
   --text-primary: #e4e7f2;
   --text-secondary: #8890ae;
   --text-muted: #555d7a;
   --positive: #34d399;
+  --positive-bg: rgba(52,211,153,0.08);
+  --positive-border: rgba(52,211,153,0.22);
   --negative: #f87171;
+  --negative-bg: rgba(248,113,113,0.08);
+  --negative-border: rgba(248,113,113,0.22);
   --neutral: #fbbf24;
+  --neutral-bg: rgba(251,191,36,0.08);
+  --neutral-border: rgba(251,191,36,0.22);
   --accent: #818cf8;
+  --accent-bg: rgba(129,140,248,0.12);
   --accent-hover: #6366f1;
+  color-scheme: dark;
+}
+
+/* ── Light Theme ── */
+:root.theme-light,
+[data-theme="light"] {
+  --bg: #f4f5f9;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f8f9fc;
+  --border: #e1e4ef;
+  --border-light: #cdd2e3;
+  --text-primary: #1a1d2e;
+  --text-secondary: #5a6380;
+  --text-muted: #9099b5;
+  --positive: #059669;
+  --positive-bg: rgba(5,150,105,0.08);
+  --positive-border: rgba(5,150,105,0.22);
+  --negative: #dc2626;
+  --negative-bg: rgba(220,38,38,0.08);
+  --negative-border: rgba(220,38,38,0.22);
+  --neutral: #d97706;
+  --neutral-bg: rgba(217,119,6,0.08);
+  --neutral-border: rgba(217,119,6,0.22);
+  --accent: #6366f1;
+  --accent-bg: rgba(99,102,241,0.1);
+  --accent-hover: #4f46e5;
+  color-scheme: light;
+}
+
+/* ── System preference ── */
+@media (prefers-color-scheme: light) {
+  :root:not(.theme-dark):not([data-theme="dark"]) {
+    --bg: #f4f5f9;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card-hover: #f8f9fc;
+    --border: #e1e4ef;
+    --border-light: #cdd2e3;
+    --text-primary: #1a1d2e;
+    --text-secondary: #5a6380;
+    --text-muted: #9099b5;
+    --positive: #059669;
+    --positive-bg: rgba(5,150,105,0.08);
+    --positive-border: rgba(5,150,105,0.22);
+    --negative: #dc2626;
+    --negative-bg: rgba(220,38,38,0.08);
+    --negative-border: rgba(220,38,38,0.22);
+    --neutral: #d97706;
+    --neutral-bg: rgba(217,119,6,0.08);
+    --neutral-border: rgba(217,119,6,0.22);
+    --accent: #6366f1;
+    --accent-bg: rgba(99,102,241,0.1);
+    --accent-hover: #4f46e5;
+    color-scheme: light;
+  }
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -30,6 +95,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background 0.2s, color 0.2s;
 }
 a { text-decoration: none; color: inherit; }
 
@@ -423,6 +489,7 @@ footer {
     <a href="#how">작동 방식</a>
     <a href="login.html">로그인</a>
     <a href="register.html" class="nav-cta">무료 시작하기 →</a>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="테마 전환" style="width:32px;height:32px;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.15s;margin-left:4px;">🌙</button>
   </div>
 </nav>
 
@@ -637,5 +704,30 @@ footer {
   </div>
 </footer>
 
+<script>
+function applyTheme(t) {
+  const r = document.documentElement;
+  if (t === 'light') {
+    r.classList.add('theme-light'); r.classList.remove('theme-dark');
+    r.setAttribute('data-theme', 'light');
+    document.getElementById('themeBtn').textContent = '☀️';
+  } else {
+    r.classList.remove('theme-light'); r.classList.add('theme-dark');
+    r.setAttribute('data-theme', 'dark');
+    document.getElementById('themeBtn').textContent = '🌙';
+  }
+  localStorage.setItem('theme', t);
+}
+function toggleTheme() {
+  const c = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  applyTheme(c === 'dark' ? 'light' : 'dark');
+}
+(function() {
+  const s = localStorage.getItem('theme');
+  if (s) applyTheme(s);
+  else if (window.matchMedia('(prefers-color-scheme: light)').matches) applyTheme('light');
+  else document.getElementById('themeBtn').textContent = '🌙';
+})();
+</script>
 </body>
 </html>
