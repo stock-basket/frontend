@@ -41,16 +41,16 @@
 /* ── Light Theme ── */
 :root.theme-light,
 [data-theme="light"] {
-  --bg: #f4f5f9;
+  --bg: #f0f2f9;
   --surface: #ffffff;
   --card: #ffffff;
-  --card-hover: #f8f9fc;
-  --border: #e1e4ef;
-  --border-light: #cdd2e3;
+  --card-hover: #f5f6fb;
+  --border: #dde1ef;
+  --border-light: #c8cde0;
 
-  --text-primary: #1a1d2e;
-  --text-secondary: #5a6380;
-  --text-muted: #9099b5;
+  --text-primary: #181c2e;
+  --text-secondary: #4e5878;
+  --text-muted: #8e96b2;
 
   --positive: #059669;
   --positive-bg: rgba(5, 150, 105, 0.08);
@@ -60,13 +60,13 @@
   --negative-bg: rgba(220, 38, 38, 0.08);
   --negative-border: rgba(220, 38, 38, 0.22);
 
-  --neutral: #d97706;
-  --neutral-bg: rgba(217, 119, 6, 0.08);
-  --neutral-border: rgba(217, 119, 6, 0.22);
+  --neutral: #b45309;
+  --neutral-bg: rgba(180, 83, 9, 0.08);
+  --neutral-border: rgba(180, 83, 9, 0.22);
 
-  --accent: #6366f1;
-  --accent-bg: rgba(99, 102, 241, 0.1);
-  --accent-hover: #4f46e5;
+  --accent: #5b5fc7;
+  --accent-bg: rgba(91, 95, 199, 0.1);
+  --accent-hover: #4346a8;
 
   --shadow: 0 4px 24px rgba(0,0,0,0.08);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
@@ -77,16 +77,16 @@
 /* ── System preference ── */
 @media (prefers-color-scheme: light) {
   :root:not(.theme-dark):not([data-theme="dark"]) {
-    --bg: #f4f5f9;
+    --bg: #f0f2f9;
     --surface: #ffffff;
     --card: #ffffff;
-    --card-hover: #f8f9fc;
-    --border: #e1e4ef;
-    --border-light: #cdd2e3;
+    --card-hover: #f5f6fb;
+    --border: #dde1ef;
+    --border-light: #c8cde0;
 
-    --text-primary: #1a1d2e;
-    --text-secondary: #5a6380;
-    --text-muted: #9099b5;
+    --text-primary: #181c2e;
+    --text-secondary: #4e5878;
+    --text-muted: #8e96b2;
 
     --positive: #059669;
     --positive-bg: rgba(5, 150, 105, 0.08);
@@ -96,13 +96,13 @@
     --negative-bg: rgba(220, 38, 38, 0.08);
     --negative-border: rgba(220, 38, 38, 0.22);
 
-    --neutral: #d97706;
-    --neutral-bg: rgba(217, 119, 6, 0.08);
-    --neutral-border: rgba(217, 119, 6, 0.22);
+    --neutral: #b45309;
+    --neutral-bg: rgba(180, 83, 9, 0.08);
+    --neutral-border: rgba(180, 83, 9, 0.22);
 
-    --accent: #6366f1;
-    --accent-bg: rgba(99, 102, 241, 0.1);
-    --accent-hover: #4f46e5;
+    --accent: #5b5fc7;
+    --accent-bg: rgba(91, 95, 199, 0.1);
+    --accent-hover: #4346a8;
 
     --shadow: 0 4px 24px rgba(0,0,0,0.08);
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
