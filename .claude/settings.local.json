@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l C:/Jung_Hamin/dev/stockbasket_f/src/pages/*.jsx)",
+      "Bash(npx vite:*)",
+      "Bash(grep -n \"홈으로\" src/pages/*.jsx)",
+      "Bash(grep -n \"sidebar-bottom\\\\|user-card\\\\|user-avatar\\\\|user-name\\\\|user-plan\" src/pages/*.jsx)"
+    ]
+  }
+}

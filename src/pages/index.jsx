@@ -545,7 +545,7 @@ export default function Home() {
           <p className="section-sub">
             회원가입 후 5개 종목까지 무료로 사용할 수 있습니다.
             <br />
-            신용카드 없이 즉시 시작 가능.
+            로그인만으로 즉시 시작 가능.
           </p>
           <div style={{"display": "flex", "justifyContent": "center", "gap": "12px", "marginTop": "36px"}}>
             <a href="register.html" className="btn-hero-primary">

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import './api/index.js'; // window.api 등록
+
 import Account from './pages/account.jsx';
 import Home from './pages/index.jsx';
 import Login from './pages/login.jsx';
@@ -8,6 +10,9 @@ import NewsDetail from './pages/news-detail.jsx';
 import News from './pages/news.jsx';
 import Register from './pages/register.jsx';
 import Settings from './pages/settings.jsx';
+import SharedBasketAccept from './pages/shared-basket-accept.jsx';
+import SharedBasketDetail from './pages/shared-basket-detail.jsx';
+import SharedBaskets from './pages/shared-baskets.jsx';
 import StockDetail from './pages/stock-detail.jsx';
 import Stocks from './pages/stocks.jsx';
 
@@ -20,6 +25,9 @@ const routes = {
   '/news.html': News,
   '/register.html': Register,
   '/settings.html': Settings,
+  '/shared-basket-accept.html': SharedBasketAccept,
+  '/shared-basket-detail.html': SharedBasketDetail,
+  '/shared-baskets.html': SharedBaskets,
   '/stock-detail.html': StockDetail,
   '/stocks.html': Stocks,
 };
